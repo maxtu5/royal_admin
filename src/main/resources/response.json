@@ -1,0 +1,460 @@
+[
+  {
+    "name": "Ernest, Margrave of Austria",
+    "identifier": 1178564,
+    "abstract": "Ernest, known as Ernest the Brave, was the Margrave of Austria from 1055 to his death in 1075. He was a member of the House of Babenberg.",
+    "version": {
+      "identifier": 1278341434,
+      "comment": "/* Marriage and children */",
+      "tags": [
+        "wikieditor"
+      ],
+      "is_minor_edit": true,
+      "scores": {
+        "revertrisk": {
+          "prediction": true,
+          "probability": {
+            "false": 0.4932825565338135,
+            "true": 0.5067174434661865
+          }
+        }
+      },
+      "editor": {
+        "identifier": 35297567,
+        "name": "HistoryFan1994",
+        "edit_count": 492,
+        "groups": [
+          "*",
+          "user",
+          "autoconfirmed"
+        ],
+        "date_started": "2018-12-03T21:53:38Z"
+      },
+      "number_of_characters": 5757,
+      "size": {
+        "value": 5780,
+        "unit_text": "B"
+      },
+      "maintenance_tags": {}
+    },
+    "url": "https://en.wikipedia.org/wiki/Ernest,_Margrave_of_Austria",
+    "date_created": "2004-11-17T04:49:39Z",
+    "date_modified": "2025-03-01T21:43:46Z",
+    "main_entity": {
+      "identifier": "Q451397",
+      "url": "https://www.wikidata.org/entity/Q451397"
+    },
+    "is_part_of": {
+      "identifier": "enwiki",
+      "url": "https://en.wikipedia.org"
+    },
+    "additional_entities": [
+      {
+        "identifier": "Q451397",
+        "url": "https://www.wikidata.org/entity/Q451397",
+        "aspects": [
+          "C",
+          "D.en",
+          "O",
+          "S",
+          "T"
+        ]
+      }
+    ],
+    "in_language": {
+      "identifier": "en"
+    },
+    "image": {
+      "content_url": "https://upload.wikimedia.org/wikipedia/commons/7/7f/Ernst_II._der_Tapfere.jpg",
+      "width": 500,
+      "height": 500
+    },
+    "license": [
+      {
+        "name": "Creative Commons Attribution-ShareAlike License 4.0",
+        "identifier": "CC-BY-SA-4.0",
+        "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+      }
+    ],
+    "description": "Margrave of Austria from 1055 to 1075",
+    "infoboxes": [
+      {
+        "name": "Infobox noble",
+        "type": "infobox",
+        "has_parts": [
+          {
+            "name": "Ernest",
+            "type": "section"
+          },
+          {
+            "name": "Margrave of Austria",
+            "type": "section",
+            "has_parts": [
+              {
+                "type": "image",
+                "value": "Ernest the Brave at the Battle of Langensalza, Babenberger Stammbaum, Klosterneuburg Monastery, 1489–1492",
+                "images": [
+                  {
+                    "content_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Ernst_II._der_Tapfere.jpg/220px-Ernst_II._der_Tapfere.jpg",
+                    "caption": "Ernest the Brave at the Battle of Langensalza, Babenberger Stammbaum, Klosterneuburg Monastery, 1489–1492",
+                    "height": 220,
+                    "width": 220
+                  }
+                ],
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Battle_of_Langensalza_(1075)",
+                    "text": "Battle of Langensalza"
+                  },
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Klosterneuburg_Monastery",
+                    "text": "Klosterneuburg Monastery"
+                  }
+                ]
+              },
+              {
+                "name": "Margravate",
+                "type": "field",
+                "value": "1055–1075"
+              },
+              {
+                "name": "Predecessor",
+                "type": "field",
+                "value": "Adalbert",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Adalbert,_Margrave_of_Austria",
+                    "text": "Adalbert"
+                  }
+                ]
+              },
+              {
+                "name": "Successor",
+                "type": "field",
+                "value": "Leopold II",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Leopold_II,_Margrave_of_Austria",
+                    "text": "Leopold II"
+                  }
+                ]
+              },
+              {
+                "name": "Born",
+                "type": "field",
+                "value": "1027"
+              },
+              {
+                "name": "Died",
+                "type": "field",
+                "value": "10 June 1075"
+              },
+              {
+                "name": "Noble family",
+                "type": "field",
+                "value": "Babenberg",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Nobility",
+                    "text": "Noble family"
+                  },
+                  {
+                    "url": "https://en.wikipedia.org/wiki/House_of_Babenberg",
+                    "text": "Babenberg"
+                  }
+                ]
+              },
+              {
+                "name": "Spouse",
+                "type": "field",
+                "value": "Adelaide of Eilenburg Swanhilde of Ungarnmark",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Adelaide_of_Eilenburg",
+                    "text": "Adelaide of Eilenburg"
+                  },
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Swanhilde_of_Ungarnmark",
+                    "text": "Swanhilde of Ungarnmark"
+                  }
+                ]
+              },
+              {
+                "name": "Issue Detail",
+                "type": "field",
+                "value": "Leopold II",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Ernest,_Margrave_of_Austria#Marriage_and_children",
+                    "text": "Detail"
+                  },
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Leopold_II,_Margrave_of_Austria",
+                    "text": "Leopold II"
+                  }
+                ]
+              },
+              {
+                "name": "Father",
+                "type": "field",
+                "value": "Adalbert",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Adalbert,_Margrave_of_Austria",
+                    "text": "Adalbert"
+                  }
+                ]
+              },
+              {
+                "name": "Mother",
+                "type": "field",
+                "value": "Frozza Orseolo",
+                "links": [
+                  {
+                    "url": "https://en.wikipedia.org/wiki/Frozza_Orseolo",
+                    "text": "Frozza Orseolo"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "name": "Abstract",
+        "type": "section",
+        "has_parts": [
+          {
+            "type": "paragraph",
+            "value": "Ernest (German: Ernst, 1027 – 10 June 1075), known as Ernest the Brave (Ernst der Tapfere), was the Margrave of Austria from 1055 to his death in 1075. He was a member of the House of Babenberg.",
+            "links": [
+              {
+                "url": "https://en.wikipedia.org/wiki/German_language",
+                "text": "German"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Margrave_of_Austria",
+                "text": "Margrave of Austria"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/House_of_Babenberg",
+                "text": "House of Babenberg"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Ernest,_Margrave_of_Austria#cite_note-1"
+              }
+            ],
+            "citations": [
+              {
+                "identifier": "cite_note-1",
+                "text": "[1]"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Biography",
+        "type": "section",
+        "has_parts": [
+          {
+            "type": "paragraph",
+            "value": "He was born to Margrave Adalbert of Austria and his wife Frozza Orseolo, daughter of Doge Otto Orseolo of Venice. He increased the territory of his margraviate by amalgamating the Bohemian and Hungarian frontier marches up to the Thaya, March and Leitha rivers in what is today Lower Austria. In his time, the colonisation of the remote Waldviertel region was begun by his ministeriales, the Kuenring knights.",
+            "links": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Adalbert,_Margrave_of_Austria",
+                "text": "Adalbert of Austria"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Frozza_Orseolo",
+                "text": "Frozza Orseolo"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Otto_Orseolo",
+                "text": "Otto Orseolo"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Republic_of_Venice",
+                "text": "Venice"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Bohemia",
+                "text": "Bohemian"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Hungarian_March",
+                "text": "Hungarian"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/March_(territory)",
+                "text": "marches"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Thaya",
+                "text": "Thaya"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Morava_(river)",
+                "text": "March"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Leitha",
+                "text": "Leitha"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Lower_Austria",
+                "text": "Lower Austria"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Waldviertel",
+                "text": "Waldviertel"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Ministeriales",
+                "text": "ministeriales"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Burgschleinitz-Kühnring",
+                "text": "Kuenring"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "value": "Ernest received his epithet due to his fighting against King Béla I of Hungary and his son Géza I on behalf of their rival Solomon according to the chronicler Lambert of Hersfeld. In the commencing Investiture Controversy, he sided with King Henry IV of Germany and battled against the Saxons, dying at the Battle of Langensalza.",
+            "links": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Epithet",
+                "text": "epithet"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Béla_I_of_Hungary",
+                "text": "Béla I of Hungary"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Géza_I_of_Hungary",
+                "text": "Géza I"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Solomon,_King_of_Hungary",
+                "text": "Solomon"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Lambert_of_Hersfeld",
+                "text": "Lambert of Hersfeld"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Investiture_Controversy",
+                "text": "Investiture Controversy"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Henry_IV,_Holy_Roman_Emperor",
+                "text": "Henry IV of Germany"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Saxon_revolt_of_1073–1075",
+                "text": "battled against the Saxons"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Battle_of_Langensalza_(1075)",
+                "text": "Battle of Langensalza"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Marriage and children",
+        "type": "section",
+        "has_parts": [
+          {
+            "type": "paragraph",
+            "value": "In 1050 Ernest married Adelaide of Eilenburg (1030 – 26 January 1071), daughter of the Wettin margrave Dedi I of Lusatia, who gave him four children:",
+            "links": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Adelaide_of_Eilenburg",
+                "text": "Adelaide of Eilenburg"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/House_of_Wettin",
+                "text": "Wettin"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Dedi_I,_Margrave_of_the_Saxon_Ostmark",
+                "text": "Dedi I"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/March_of_Lusatia",
+                "text": "Lusatia"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "has_parts": [
+              {
+                "type": "list_item",
+                "value": "Leopold II, Margrave of Austria (1050–1095)",
+                "links": [
+                  {
+                    "url": "Leopold_II,_Margrave_of_Austria",
+                    "text": "Leopold II, Margrave of Austria"
+                  }
+                ]
+              },
+              {
+                "type": "list_item",
+                "value": "Justitia (d. 1120/1122), married Count Otto II of Wolfratshausen",
+                "links": [
+                  {
+                    "url": "Counts_of_Andechs",
+                    "text": "Wolfratshausen"
+                  }
+                ]
+              },
+              {
+                "type": "list_item",
+                "value": "Adalbert of Pernegg, Count of Bogen",
+                "links": [
+                  {
+                    "url": "Pernegg",
+                    "text": "Pernegg"
+                  },
+                  {
+                    "url": "Bogen,_Germany",
+                    "text": "Bogen"
+                  }
+                ]
+              },
+              {
+                "type": "list_item",
+                "value": "a daughter, who married Count Herman I of Poigen"
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "value": "In 1072 he secondly married Swanhild, daughter of Count Sighard VII in the Hungarian March.",
+            "links": [
+              {
+                "url": "https://en.wikipedia.org/wiki/Swanhilde_of_Ungarnmark",
+                "text": "Swanhild"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "references": [
+      {
+        "identifier": "cite_note-1",
+        "type": "text",
+        "text": {
+          "value": "Lingelbach 1913, p. 90."
+        }
+      }
+    ]
+  }
+]
