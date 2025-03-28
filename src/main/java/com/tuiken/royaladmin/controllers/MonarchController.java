@@ -44,8 +44,8 @@ public class MonarchController {
     @DeleteMapping(path = "/delete")
     public List<MonarchApiDto> deleteMonarchsByUrl(@RequestBody List<String> toDelete) {
         List<MonarchApiDto> retval = new ArrayList<>();
-        for (String id : toDelete) {
-            retval.add(monarchService.deleteByUrl(id));
+        for (String url : toDelete) {
+            retval.add(monarchService.deleteByUrl(url));
         }
         return retval;
     }

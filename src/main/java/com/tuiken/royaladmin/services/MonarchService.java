@@ -3,18 +3,20 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.datalayer.MonarchRepository;
 import com.tuiken.royaladmin.datalayer.ProvenenceRepository;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
+import com.tuiken.royaladmin.datalayer.ThroneRepository;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
+import com.tuiken.royaladmin.model.entities.Throne;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.Converters;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -26,6 +28,7 @@ public class MonarchService {
     private final ReignRepository reignRepository;
     private final ProvenenceRepository provenenceRepository;
     private final ProvenanceService provenanceService;
+    private final ThroneRepository throneRepository;
 
     public Monarch findByUrl(String monarchUrl) {
         return monarchRepository.findByUrl(monarchUrl).orElse(null);
@@ -50,10 +53,43 @@ public class MonarchService {
         return !reignRepository.findByIdInAndCountry(ids, country).isEmpty();
     }
 
+    @Transactional
     public MonarchApiDto deleteByUrl(String url) {
         MonarchApiDto retval = null;
         Monarch monarch = findByUrl(url);
         if (monarch != null) {
+            List<Provenence> related = provenanceService.findProvenencesWith(monarch);
+            for (Provenence provenence: related) {
+                if (provenence.getId().equals(monarch.getId())) {
+                    provenanceService.deleteProvenence(provenence);
+                }
+                if (provenence.getFather()!= null && provenence.getFather().equals(monarch.getId())) {
+                    if (provenence.getMother()==null) {
+                        provenanceService.deleteProvenence(provenence);
+                    } else {
+                        provenence.setFather(null);
+                        provenanceService.save(provenence);
+                    }
+                }
+                if (provenence.getMother()!=null && provenence.getMother().equals(monarch.getId())) {
+                    if (provenence.getFather()==null) {
+                        provenanceService.deleteProvenence(provenence);
+                    } else {
+                        provenence.setMother(null);
+                        provenanceService.save(provenence);
+                    }
+                }
+            }
+            if (!monarch.getReignIds().isEmpty()) {
+                for (UUID reignId: monarch.getReignIds()) {
+                    Reign reign = reignRepository.findById(reignId).orElse(null);
+                    if (reign!=null) {
+                        List<Throne> throne = throneRepository.findByCountry(reign.getCountry());
+                        throne.get(0).getReigns().remove(reign);
+                        throneRepository.save(throne.get(0));
+                    }
+                }
+            }
             retval = toApiDto(monarch);
             System.out.printf("Deleting monarch %s, %s%n", monarch.getName(), monarch.getId());
             monarchRepository.deleteById(monarch.getId());

@@ -202,7 +202,8 @@ public enum House {
     VERGY("Vergy"),
     LIECHTENSTEIN("Liechtenstein"),
     ZAHRINGEN("Zähringen"),
-    SHUYSKY("Shuysky");
+    SHUYSKY("Shuysky"),
+    CZARTORYSKI("Czartoryski");
 
     private final String label;
 

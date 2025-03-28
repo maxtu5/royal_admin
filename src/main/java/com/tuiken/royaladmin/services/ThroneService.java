@@ -133,4 +133,8 @@ public class ThroneService {
         throneRepository.save(throne);
         return monarchService.toApiDto(monarch);
     }
+
+    public Throne save(Throne throne) {
+        return throneRepository.save(throne);
+    }
 }

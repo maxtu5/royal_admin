@@ -100,4 +100,16 @@ public class ProvenanceService {
             provenenceRepository.save(provenence);
         }
     }
+
+    public Provenence save(Provenence provenence) {
+        return provenenceRepository.save(provenence);
+    }
+
+    public List<Provenence> findProvenencesWith(Monarch monarch) {
+        List<Provenence> retval = provenenceRepository.findByMother(monarch.getId());
+        retval.addAll(provenenceRepository.findByFather(monarch.getId()));
+        Provenence self = provenenceRepository.findById(monarch.getId()).orElse(null);
+        if (self!=null) retval.add(self);
+        return retval;
+    }
 }
