@@ -94,4 +94,12 @@ public class AiResolverService {
         }
         return response;
     }
+
+    public String createDescription(String name) {
+        String promtTemplate = "give me 500 chars text about %s";
+        String prompt = String.format(promtTemplate, name);
+        String response = aiClient.call(prompt);
+        return response;
+
+    }
 }

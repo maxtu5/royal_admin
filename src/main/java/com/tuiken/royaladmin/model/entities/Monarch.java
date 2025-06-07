@@ -49,6 +49,13 @@ public class Monarch {
     @CollectionTable
     private List<UUID> reignIds = new ArrayList<>();
 
+    @Column(length = 1024)
+    private String imageUrl;
+    @Column(length = 512)
+    private String imageCaption;
+    @Column(length = 1024)
+    private String description;
+
     public Monarch(String url) {
         this.url = url;
     }

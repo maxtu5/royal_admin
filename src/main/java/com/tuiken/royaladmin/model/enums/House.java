@@ -203,7 +203,19 @@ public enum House {
     LIECHTENSTEIN("Liechtenstein"),
     ZAHRINGEN("Zähringen"),
     SHUYSKY("Shuysky"),
-    CZARTORYSKI("Czartoryski");
+    CZARTORYSKI("Czartoryski"),
+    SRATSIMIR("Sratsimir"),
+    SHISHMAN("Shishman"),
+    TERTER("Terter"),
+    BORJIGIN("Borjigin"),
+    ASEN("Asen"),
+    ENRIQUEZ("Enríquez"),
+    BIRON("Biron"),
+    MOUNTBATTEN("Mountbatten"),
+    HUGEL("Hügel"),
+    GRIMALDI("Grimaldi"),
+    POLIGNAC("Polignac"),
+    MERODE("Merode");
 
     private final String label;
 

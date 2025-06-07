@@ -36,7 +36,14 @@ public enum Country {
     GREECE(new String[]{"Hellenes", "Greece"}),
     NAPLES(new String[]{"Naples"}),
     BADEN(new String[]{"Duke of Baden"}),
-    RUSSIA(new String[]{"Russia", "Moscow"});
+    RUSSIA(new String[]{"Russia", "Moscow"}),
+    BULGARIA(new String[]{"Bulgaria"}),
+    ARAGON(new String[]{"Aragon"}),
+    CASTILE(new String[]{"Castile"}),
+    COURLAND(new String[]{"Courland and Semigallia"}),
+    BRETAGNE(new String[]{"Brittany"}),
+    MONACO(new String[]{"Monaco"}),
+    PARMA(new String[]{"Parma"});
 
     @Getter
     private final String[] keywords;

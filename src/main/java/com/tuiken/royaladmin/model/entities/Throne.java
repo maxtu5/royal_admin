@@ -26,12 +26,13 @@ public class Throne {
     @Enumerated(EnumType.STRING)
     private Country country;
 
+    private String flagUrl;
+
     @OrderColumn
     @OneToMany(
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @JoinColumn(name = "throne_id")
-
     private List<Reign> reigns = new ArrayList<>();
 }

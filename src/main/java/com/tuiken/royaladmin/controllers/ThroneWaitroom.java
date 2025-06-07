@@ -27,7 +27,7 @@ public class ThroneWaitroom {
 
     @PutMapping(path = "/create")
     public ThroneDto createThrone(@RequestBody ThroneOperationDto throne) {
-        return throneService.createThrone(throne.getCountry(), throne.getLatestMonarchUrl(), throne.getName());
+        return throneService.createThrone(throne.getCountry(), throne.getLatestMonarchUrl(), throne.getName(), throne.getFlagUrl());
     }
 
     @PutMapping("/addreign")

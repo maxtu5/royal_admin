@@ -55,10 +55,13 @@ public class PersonBuilder {
             if (jsonArray == null || JsonUtils.readInfoboxes(jsonArray).size() == 0) return null;
 
             Monarch monarch = new Monarch(url);
-            monarch.setName(RetrieverService.retrieveName(jsonArray));
+            monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
             monarch.setBirth(RetrieverService.retrieveOneDate(jsonArray, "Born"));
             monarch.setDeath(RetrieverService.retrieveOneDate(jsonArray, "Died"));
             monarch.setHouse(RetrieverService.retrieveHouses(jsonArray));
+            String[] imageData = RetrieverService.retrieveImage(jsonArray);
+            monarch.setImageUrl(imageData[0]);
+            monarch.setImageCaption(imageData[1]);
             monarch.setStatus(PersonStatus.NEW_URL);
             System.out.println("== Created person " + monarch.getName());
             return monarch;

@@ -15,6 +15,7 @@ import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -29,6 +30,7 @@ public class MonarchService {
     private final ProvenenceRepository provenenceRepository;
     private final ProvenanceService provenanceService;
     private final ThroneRepository throneRepository;
+    private final AiResolverService aiResolverService;
 
     public Monarch findByUrl(String monarchUrl) {
         return monarchRepository.findByUrl(monarchUrl).orElse(null);
@@ -114,14 +116,14 @@ public class MonarchService {
         } else {
             List<ReignDto> reignDtos = new ArrayList<>();
             monarch.getReignIds().forEach(rid -> {
-                Reign r = reignRepository.findById(rid).orElse(null);
+                Reign reignFromDb = reignRepository.findById(rid).orElse(null);
                 System.out.println(rid);
                 ReignDto reignDto = ReignDto.builder()
-                        .title(r.getTitle())
-                        .country(r.getCountry())
-                        .start(r.getStart() == null ? null : r.getStart().atZone(ZoneId.systemDefault()).toLocalDate())
-                        .end(r.getEnd() == null ? null : r.getEnd().atZone(ZoneId.systemDefault()).toLocalDate())
-                        .coronation(r.getCoronation() == null ? null : r.getCoronation().atZone(ZoneId.systemDefault()).toLocalDate())
+                        .title(reignFromDb.getTitle())
+                        .country(reignFromDb.getCountry())
+                        .start(reignFromDb.getStart() == null ? null : reignFromDb.getStart().atZone(ZoneId.systemDefault()).toLocalDate())
+                        .end(reignFromDb.getEnd() == null ? null : reignFromDb.getEnd().atZone(ZoneId.systemDefault()).toLocalDate())
+                        .coronation(reignFromDb.getCoronation() == null ? null : reignFromDb.getCoronation().atZone(ZoneId.systemDefault()).toLocalDate())
                         .build();
                 reignDtos.add(reignDto);
             });
@@ -194,4 +196,17 @@ public class MonarchService {
         return toApiDto(monarch);
     }
 
+    public String descriptionById(String id) {
+        Monarch monarch = finById(UUID.fromString(id));
+        if (Strings.isNotBlank(monarch.getDescription())) {
+            return monarch.getDescription();
+        } else {
+            String desc = aiResolverService.createDescription(monarch.getName());
+            System.out.println(desc);
+            System.out.println(desc.length());
+            monarch.setDescription(desc);
+            save(monarch);
+            return desc;
+        }
+    }
 }

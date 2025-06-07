@@ -1,11 +1,8 @@
 package com.tuiken.royaladmin.controllers;
 
 import com.tuiken.royaladmin.exceptions.WikiApiException;
-import com.tuiken.royaladmin.model.api.output.CsvFullExportDto;
-import com.tuiken.royaladmin.services.ExportService;
 import com.tuiken.royaladmin.services.RepairService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +22,7 @@ public class RepairController {
             case 400: return repairService.missingIdsProvenence();
             case 500: return repairService.reportReignCollisions();
             case 600: return repairService.unresolvedUrls();
+            case 1000: return repairService.listMonarchsNotInCache();
         }
         return false;
     }

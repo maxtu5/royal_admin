@@ -14,6 +14,7 @@ import com.tuiken.royaladmin.model.graphcsv.*;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.io.FileWriter;
@@ -141,6 +142,7 @@ public class ExportService {
                 .id(throne.getId().toString())
                 .name(throne.getName())
                 .country(throne.getCountry().toString())
+                .flagUrl(throne.getFlagUrl())
                 .build();
     }
 
@@ -153,6 +155,8 @@ public class ExportService {
                 .death(Converters.toLocalDate(monarch.getDeath()))
                 .url(monarch.getUrl())
                 .status(monarch.getStatus())
+                .imageUrl(Strings.isBlank(monarch.getImageUrl()) ? "" : monarch.getImageUrl())
+                .imageCaption(Strings.isBlank(monarch.getImageCaption())? "": monarch.getImageCaption().replace(',', '|'))
                 .build();
     }
 

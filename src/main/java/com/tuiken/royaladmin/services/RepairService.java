@@ -170,10 +170,10 @@ public class RepairService {
 
     public boolean unresolvedUrls() {
         List<Monarch> monarchs = monarchService.loadAllMonarchs();
-        int i=0;
+        int i = 0;
         for (Monarch monarch : monarchs) {
             i++;
-            if (i%10==7) {
+            if (i % 10 == 7) {
                 try {
                     sleep(1000);
                 } catch (InterruptedException e) {
@@ -195,8 +195,8 @@ public class RepairService {
                     Monarch mother = provenanceService.findMother(monarch);
                     Monarch rightMother = provenanceService.findMother(rightMonarch);
 
-                    if (father!=null && rightFather!=null && !father.getId().equals(rightFather.getId()) ||
-                            mother!=null && rightMother!=null && !mother.getId().equals(rightMother.getId())) {
+                    if (father != null && rightFather != null && !father.getId().equals(rightFather.getId()) ||
+                            mother != null && rightMother != null && !mother.getId().equals(rightMother.getId())) {
                         System.out.println("different parents");
                     } else {
                         rightMonarch.getReignIds().addAll(monarch.getReignIds());
@@ -204,13 +204,13 @@ public class RepairService {
                         monarch.setReignIds(new ArrayList<>());
                         monarchService.save(monarch);
                         Set<Monarch> children = provenanceService.findChildren(monarch);
-                        for (Monarch child: children) {
+                        for (Monarch child : children) {
                             provenanceService.setParent(child, rightMonarch);
                         }
-                        if (rightFather==null && father!=null) {
+                        if (rightFather == null && father != null) {
                             provenanceService.setParent(rightMonarch, father);
                         }
-                        if (rightMother==null && mother!=null) {
+                        if (rightMother == null && mother != null) {
                             provenanceService.setParent(rightMonarch, mother);
                         }
                         monarchService.deleteByUrl(monarch.getUrl());
@@ -219,6 +219,54 @@ public class RepairService {
                 }
             }
         }
+        return false;
+    }
+
+    public boolean listMonarchsNotInCache() throws WikiApiException {
+        List<Monarch> monarches = monarchService.loadAllMonarchs();
+        monarches = monarches.stream()
+                .filter(m -> Strings.isBlank(m.getImageUrl()))
+                .filter(m -> !wikiCacheRecordRepository.existsByUrl(m.getUrl()))
+                .toList();
+        System.out.println(monarches.size());
+        monarches.stream()
+                .limit(10)
+                .forEach(m -> {
+                    try {
+                        JSONArray monarchJson = wikiService.read(m.getUrl());
+                        List<JSONObject> inf = JsonUtils.readInfoboxes(monarchJson);
+                        for (JSONObject infobox : inf) {
+                            JSONObject image = JsonUtils.findImage(inf);
+                            if (image.has("content_url")) {
+                                m.setImageUrl(image.getString("content_url"));
+                                if (image.has("caption")) m.setImageCaption(image.getString("caption"));
+                                monarchService.save(m);
+                                System.out.println(m.getUrl());
+                            }
+                        }
+                    } catch (WikiApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+//        monarches.forEach(m-> System.out.println(m.getUrl()));
+//        System.out.println(monarches.size());
+
+//        Iterable<WikiCacheRecord> wikiCacheRecords = wikiCacheRecordRepository.findAll();
+//        for (WikiCacheRecord record: wikiCacheRecords) {
+//            Monarch monarch = monarchService.findByUrl(record.getUrl());
+//            if (monarch!=null && Strings.isBlank(monarch.getImageUrl())) {
+//                JSONArray monarchJson = new JSONArray(record.getBody());
+//                List<JSONObject> inf = JsonUtils.readInfoboxes(monarchJson);
+//                for (JSONObject infobox: inf) {
+//                    JSONObject image = JsonUtils.findImage(inf);
+//                    if (image.has("content_url")) {
+//                        monarch.setImageUrl(image.getString("content_url"));
+//                        if (image.has("caption")) monarch.setImageCaption(image.getString("caption"));
+//                        monarchService.save(monarch);
+//                    }
+//                }
+//            }
+//        }
         return false;
     }
 }

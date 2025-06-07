@@ -15,4 +15,6 @@ public class ThroneCsvDto {
     private String name;
     @CsvBindByPosition(position = 2)
     private String country;
+    @CsvBindByPosition(position = 3)
+    private String flagUrl;
 }

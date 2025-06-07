@@ -12,4 +12,5 @@ public class ThroneOperationDto {
     Country country;
     String name;
     String latestMonarchUrl;
+    String flagUrl;
 }
