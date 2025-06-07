@@ -105,6 +105,12 @@ public class JsonUtils {
                 .collect(Collectors.toList());
     }
 
+    private static List<JSONObject> choosePartsByType(List<JSONObject> parts, String keys) {
+        return parts.stream()
+                .filter(o -> o.has("type") && (keys.equalsIgnoreCase((String) o.get("type"))))
+                .collect(Collectors.toList());
+    }
+
     public static List<JSONObject> drillForName(List<JSONObject> infoboxes, String... keys) {
         List<JSONObject> items = JsonUtils.extendParts(infoboxes);
         List<JSONObject> retval = JsonUtils.choosePartsByName(items, keys);
@@ -158,5 +164,15 @@ public class JsonUtils {
                     .collect(Collectors.toList());
         }
         return JsonUtils.drillForName(list, keyword);
+    }
+
+    public static JSONObject findImage(List<JSONObject> inf) {
+        List<JSONObject> items = JsonUtils.extendParts(inf);
+        List<JSONObject> retval = JsonUtils.choosePartsByType(items, "image");
+        while (!items.isEmpty()) {
+            items = JsonUtils.extendParts(items);
+            retval.addAll(JsonUtils.choosePartsByType(items, "image"));
+        }
+        return retval.isEmpty() ? new JSONObject() : retval.get(0).getJSONArray("images").getJSONObject(0);
     }
 }

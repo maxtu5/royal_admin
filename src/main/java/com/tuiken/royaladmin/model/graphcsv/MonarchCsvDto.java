@@ -26,5 +26,9 @@ public class MonarchCsvDto {
     PersonStatus status;
     @CsvBindByPosition(position = 6)
     String url;
+    @CsvBindByPosition(position = 7)
+    String imageUrl;
+    @CsvBindByPosition(position = 8)
+    String imageCaption;
 
 }

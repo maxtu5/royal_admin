@@ -41,6 +41,12 @@ public class MonarchController {
         return monarchService.toApiDtoByUrl(url.getUrl());
     }
 
+    @GetMapping(path = "/descbyid/{id}")
+    public String monarchDescByUrl(@PathVariable String id) {
+        System.out.println(id);
+        return monarchService.descriptionById(id);
+    }
+
     @DeleteMapping(path = "/delete")
     public List<MonarchApiDto> deleteMonarchsByUrl(@RequestBody List<String> toDelete) {
         List<MonarchApiDto> retval = new ArrayList<>();

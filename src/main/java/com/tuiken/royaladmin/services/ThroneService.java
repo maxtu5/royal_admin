@@ -75,11 +75,12 @@ public class ThroneService {
     }
 
     @Transactional
-    public ThroneDto createThrone(Country country, String latestMonarchUrl, String name) {
+    public ThroneDto createThrone(Country country, String latestMonarchUrl, String name, String flagUrl) {
 
         Throne throne = new Throne();
         throne.setCountry(country);
         throne.setName(name);
+        throne.setFlagUrl(flagUrl);
         throneRepository.save(throne);
 
         Monarch monarch = personBuilder.findOrCreate(latestMonarchUrl, null);

@@ -44,6 +44,15 @@ public class RetrieverService {
         return list.size() > 0 ? list.stream().findFirst().get() : null;
     }
 
+    public static String retrieveProperty(JSONArray jsonArray, String propertyName) {
+        Set<String> list = new HashSet<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject object = jsonArray.getJSONObject(i);
+            if (object.has(propertyName)) list.add((String) object.get(propertyName));
+        }
+        return list.size() > 0 ? list.stream().findFirst().get() : null;
+    }
+
     public static Instant retrieveOneDate(JSONArray jsonArray, String key) {
         List<JSONObject> list = JsonUtils.arrayTolist(jsonArray);
         List<JSONObject> dates = JsonUtils.drillForName(list, key);
@@ -154,6 +163,17 @@ public class RetrieverService {
             return (String) list.get(0).get("name");
         }
         return null;
+    }
+
+    public static String[] retrieveImage(JSONArray jsonArray) {
+        String[] retval = {"",""};
+        List<JSONObject> inf = JsonUtils.readInfoboxes(jsonArray);
+            JSONObject image = JsonUtils.findImage(inf);
+            if (image.has("content_url")) {
+                retval[0]=image.getString("content_url");
+                if (image.has("caption")) retval[1]=image.getString("caption");
+            }
+        return retval;
     }
 
     public String retrievePredecessor(JSONArray jsonArray, Country country) {
