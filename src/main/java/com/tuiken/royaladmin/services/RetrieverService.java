@@ -197,8 +197,7 @@ public class RetrieverService {
         return null;
     }
 
-    public LoadFamilyConfiguration createLoadFamilyConfiguration(Monarch root, Country rootCountry)
-            throws WikiApiException {
+    public LoadFamilyConfiguration createLoadFamilyConfiguration(Monarch root, Country rootCountry) {
 
         LoadFamilyConfiguration configuration = LoadFamilyConfiguration.builder()
                 .rootId(root.getId())
@@ -206,7 +205,13 @@ public class RetrieverService {
                 .rootGender(root.getGender())
                 .build();
 
-        JSONArray jsonArray = wikiService.read(root.getUrl());
+        JSONArray jsonArray = new JSONArray();
+        try {
+            jsonArray = wikiService.read(root.getUrl());
+        }
+        catch (WikiApiException e) {
+            System.out.println("Wiki API error");
+        }
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
 
         // parents
@@ -249,7 +254,7 @@ public class RetrieverService {
         return configuration;
     }
 
-    public List<Monarch> extractIssueFromWikiValidatedWithCreate(JSONArray jsonArray, Monarch root, Country rootCountry) throws WikiApiException {
+    public List<Monarch> extractIssueFromWikiValidatedWithCreate(JSONArray jsonArray, Monarch root, Country rootCountry) {
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
         List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Issue More", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...");
 

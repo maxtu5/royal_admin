@@ -71,7 +71,7 @@ public class StatsService {
         List<ThroneStatsApiDto> throneStatsApiDtos = new ArrayList<>();
         throneRepository.findAll().forEach(throne -> {
             List<Monarch> monarchList = throne.getReigns().stream()
-                    .map(r -> monarchService.findByReignId(r.getId()))
+                    .map(reign -> monarchService.findByReignId(reign.getId()))
                     .toList();
             if (monarchList.stream()
                     .filter(m->m.getStatus()!= PersonStatus.RESOLVED)

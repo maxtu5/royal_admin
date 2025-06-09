@@ -7,10 +7,7 @@ import com.tuiken.royaladmin.datalayer.ThroneRepository;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
-import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.entities.Provenence;
-import com.tuiken.royaladmin.model.entities.Reign;
-import com.tuiken.royaladmin.model.entities.Throne;
+import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
@@ -30,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,30 +128,49 @@ public class WikiLoaderService {
         return monarchService.toApiDto(monarch);
     }
 
-    public MonarchApiDto resolveFamilyNext(Country country, int depth) throws WikiApiException {
-        Throne throne = throneRoom.loadThroneByCountry(country);
-        if (throne == null || throne.getReigns().size() == 0) return null;
+    public List<MonarchApiDto> loadRulersFamilyMembers(Country country, int quantity, int depth) {
+        List<UUID> idsToLoad = findUnresolvedIds(country, quantity, depth);
+        return idsToLoad.stream().map(id->loadFamilyOne(id, country)).toList();
+    }
 
-        Monarch monarch = null;
-        for (int i = 0; i < throne.getReigns().size(); i++) {
-            String monarchId = monarchService.findByReignId(throne.getReigns().get(i).getId())
-                    .getId().toString();
-            monarch = monarchService.findFirstToResolve(monarchId, depth);
-            if (monarch != null) break;
+    private List<UUID> findUnresolvedIds(Country country, int quantity, int maxDepth) {
+        List<UUID> retval = new ArrayList<>();
+
+        Throne throne = throneRoom.loadThroneByCountry(country);
+        if (throne == null || throne.getReigns().size() == 0) return retval;
+
+        Set<UUID> idsOnly = throne.getReigns().stream()
+                .map(Reign::getId)
+                .map(monarchService::findByReignId)
+                .map(Monarch::getId).collect(Collectors.toSet());
+
+        int depth = 0;
+        while (retval.size()<quantity && depth<maxDepth)
+        {
+            List<MonarchIdStatus> monarchsLevel = monarchService.finByManyId(idsOnly);
+            List<MonarchIdStatus> monarchsLevelUnresolved = monarchsLevel.stream().filter(ids->ids.getStatus()!=PersonStatus.RESOLVED).toList();
+            retval.addAll(monarchsLevelUnresolved.stream().map(MonarchIdStatus::getId).limit(quantity - retval.size()).toList());
+            idsOnly = provenanceService.findAllRelatives(monarchsLevel.stream().map(MonarchIdStatus::getId).toList());
+            depth++;
         }
-        if (monarch == null) return null;
+
+        return retval;
+    }
+
+    private MonarchApiDto loadFamilyOne(UUID id, Country country) {
+        Monarch monarch = monarchService.finById(id);
 
         System.out.printf("\n+++ Loading family for %s +++%n", monarch.getName());
 
-        Monarch simplified = new Monarch(monarch.getUrl());
-        simplified.setId(monarch.getId());
-        simplified.setName(monarch.getName());
-        simplified.setGender(monarch.getGender());
-        simplified.setBirth(monarch.getBirth());
-        simplified.setDeath(monarch.getDeath());
+        Monarch unmanaged = new Monarch(monarch.getUrl());
+        unmanaged.setId(monarch.getId());
+        unmanaged.setName(monarch.getName());
+        unmanaged.setGender(monarch.getGender());
+        unmanaged.setBirth(monarch.getBirth());
+        unmanaged.setDeath(monarch.getDeath());
 
         LoadFamilyConfiguration configuration = retrieverService.createLoadFamilyConfiguration(
-                simplified, country);
+                unmanaged, country);
         configuration.print();
 
         try {
@@ -172,6 +189,4 @@ public class WikiLoaderService {
         retval.setFamily(provenanceService.toFamilyDto(monarch, provenence));
         return retval;
     }
-
-
 }

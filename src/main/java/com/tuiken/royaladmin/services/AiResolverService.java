@@ -30,7 +30,8 @@ public class AiResolverService {
                 Make sure there are no newline characters in the JSON object response. 
         """;
         String prompt = String.format(promtTemplate, child, childType, parent, country.toString());
-        return sendRequest(prompt);
+        String s = sendRequest(prompt);
+        return s.toLowerCase().contains("#marriage_and_issue") ? "{\"link\":\"\"}" : s;
     }
 
     public String findChild1(String childName, String parentName) {

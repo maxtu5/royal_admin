@@ -31,8 +31,7 @@ public class SmartIssueSearchService {
     private static final String SIMPLE_URL_PREFIX = "https://simple.wikipedia.org/wiki/";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";
 
-    List<Monarch> smartExtractWithCreate(JSONArray jsonArray, Monarch root, Country rootCountry)
-            throws WikiApiException {
+    List<Monarch> smartExtractWithCreate(JSONArray jsonArray, Monarch root, Country rootCountry) {
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
         List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...");
         Set<String> allLinks = JsonUtils.readAllLinks(jsonArray).stream()
@@ -83,8 +82,13 @@ public class SmartIssueSearchService {
         return retval;
     }
 
-    private boolean checkParent(Monarch monarch, Monarch parent) throws WikiApiException {
-        JSONArray jsonArray = wikiService.read(monarch.getUrl());
+    private boolean checkParent(Monarch monarch, Monarch parent) {
+        JSONArray jsonArray = new JSONArray();
+        try {
+            jsonArray=wikiService.read(monarch.getUrl());
+        } catch (WikiApiException e) {
+            System.out.println("Oiiii wiki geve error");
+        }
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
         if (parent.getGender().equals(Gender.MALE)) {
             List<JSONObject> father = JsonUtils.drillForName(infoboxes, "Father");

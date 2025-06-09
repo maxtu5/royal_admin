@@ -11,10 +11,7 @@ import com.tuiken.royaladmin.model.workflows.SaveFamilyConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,11 +102,27 @@ public class ProvenanceService {
         return provenenceRepository.save(provenence);
     }
 
-    public List<Provenence> findProvenencesWith(Monarch monarch) {
-        List<Provenence> retval = provenenceRepository.findByMother(monarch.getId());
-        retval.addAll(provenenceRepository.findByFather(monarch.getId()));
-        Provenence self = provenenceRepository.findById(monarch.getId()).orElse(null);
+    public List<Provenence> findProvenencesWith(UUID monarchId) {
+        List<Provenence> retval = provenenceRepository.findByMother(monarchId);
+        retval.addAll(provenenceRepository.findByFather(monarchId));
+        Provenence self = provenenceRepository.findById(monarchId).orElse(null);
         if (self!=null) retval.add(self);
         return retval;
     }
+
+    public Set<UUID> findAllRelatives(List<UUID> ids) {
+        Set<UUID> retval = new HashSet<>();
+        ids.forEach(id->{
+            List<Provenence> provenences = provenenceRepository.findByMother(id);
+            provenences.addAll(provenenceRepository.findByFather(id));
+            provenenceRepository.findById(id).ifPresent(provenences::add);
+            provenences.forEach(provenence -> {
+                retval.add(provenence.getId());
+                if (provenence.getMother() != null) retval.add(provenence.getMother());
+                if (provenence.getFather() != null) retval.add(provenence.getFather());
+            });
+        });
+        return retval;
+    }
+
 }

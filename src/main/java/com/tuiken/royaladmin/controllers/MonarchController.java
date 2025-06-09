@@ -10,6 +10,7 @@ import com.tuiken.royaladmin.services.MonarchService;
 import com.tuiken.royaladmin.services.StatsService;
 import com.tuiken.royaladmin.services.UnhandledRecordService;
 import com.tuiken.royaladmin.services.WikiLoaderService;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -20,8 +21,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/data/monarchs")
-@Slf4j
 @CrossOrigin
+@Slf4j
 @RequiredArgsConstructor
 public class MonarchController {
 
@@ -80,14 +81,12 @@ public class MonarchController {
     }
 
     @PostMapping(path = "/family/{country}/{depth}/{quantity}")
-    public List<MonarchApiDto> loadFamilyNext(@PathVariable String country, @PathVariable int quantity, @PathVariable int depth) throws WikiApiException {
-        List<MonarchApiDto> retval = new ArrayList<>();
-        for (int i=0; i<quantity; i++) {
-            MonarchApiDto resolved = wikiLoaderService.resolveFamilyNext(Country.valueOf(country), depth);
-            if (resolved==null) break;
-            retval.add(resolved);
-        }
-        return retval;
+    public List<MonarchApiDto> loadRulersFamilyMembers(
+            @PathVariable Country country,
+            @PathVariable @Min(1) int quantity,
+            @PathVariable @Min(1) int depth)
+    {
+        return wikiLoaderService.loadRulersFamilyMembers(country, quantity, depth);
     }
 
     @GetMapping(path = "/unhandled")

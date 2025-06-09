@@ -6,10 +6,7 @@ import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.ThroneRepository;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
-import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.entities.Provenence;
-import com.tuiken.royaladmin.model.entities.Reign;
-import com.tuiken.royaladmin.model.entities.Throne;
+import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.Converters;
@@ -60,7 +57,7 @@ public class MonarchService {
         MonarchApiDto retval = null;
         Monarch monarch = findByUrl(url);
         if (monarch != null) {
-            List<Provenence> related = provenanceService.findProvenencesWith(monarch);
+            List<Provenence> related = provenanceService.findProvenencesWith(monarch.getId());
             for (Provenence provenence: related) {
                 if (provenence.getId().equals(monarch.getId())) {
                     provenanceService.deleteProvenence(provenence);
@@ -208,5 +205,9 @@ public class MonarchService {
             save(monarch);
             return desc;
         }
+    }
+
+    public List<MonarchIdStatus> finByManyId(Set<UUID> idsAtLevel) {
+        return monarchRepository.findAllByIdIn(idsAtLevel);
     }
 }
