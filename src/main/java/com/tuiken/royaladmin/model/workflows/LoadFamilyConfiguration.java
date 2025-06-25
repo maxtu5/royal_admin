@@ -1,9 +1,11 @@
 package com.tuiken.royaladmin.model.workflows;
 
+import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.Gender;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,12 +16,14 @@ public class LoadFamilyConfiguration {
     UUID rootId;
     String rootUrl;
     Gender rootGender;
+
     UUID fatherId;
-    String fatherUrl;
+    Monarch father;
     UUID motherId;
-    String motherUrl;
-    List<UUID> issueIds;
-    List<String> issueUrls;
+    Monarch mother;
+
+    List<UUID> issueIds = new ArrayList<>();
+    List<Monarch> issue;
 
     public void print() {
         System.out.println("=== PRE LOAD CONFIGURATION ===");
@@ -30,11 +34,11 @@ public class LoadFamilyConfiguration {
                 (issueIds!=null && !issueIds.isEmpty() ? issueIds.size() + " children" : "");
         System.out.println(knownLine);
         System.out.println("== In wiki:");
-        if (fatherUrl!=null) System.out.println("= Father: " + fatherUrl);
-        if (motherUrl!=null) System.out.println("= Mother: " + motherUrl);
-        if (issueUrls!=null && !issueUrls.isEmpty()) {
-            System.out.println("= Children: " + issueUrls.size());
-            issueUrls.forEach(s-> System.out.println("= Child: " + s));
+        if (father!=null) System.out.println((father.getId()==null?"= (new)":"= ")+"Father: " + father.getName());
+        if (mother!=null) System.out.println((mother.getId()==null?"= (new)":"= ")+"Mother: " + mother.getName());
+        if (issue!=null && !issue.isEmpty()) {
+            System.out.println("= Children: " + issue.size());
+            issue.forEach(s-> System.out.println((s.getId()==null?"= (new)":"= ")+"Child: " + s.getName()));
         }
     }
 

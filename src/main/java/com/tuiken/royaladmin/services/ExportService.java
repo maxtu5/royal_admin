@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ExportService {
 
-    private static final String TARGET_PATH = "data\\csv\\";
+    private static final String TARGET_PATH = "C:\\Users\\MT\\IdeaProjects\\royal_admin\\data\\csv\\";
     private static final String THRONES_FILE = "thrones.csv";
     private static final String MONARCHS_FILE = "monarchs.csv";
     private static final String REIGNS_FILE = "reigns.csv";
@@ -50,7 +50,7 @@ public class ExportService {
 
         List<Monarch> monarchs = monarchService.loadAllMonarchs();
         List<MonarchCsvDto> monarchDtos = monarchs.stream()
-                .map(this::toMonarchDto).toList();
+                .map(this::toMonarchCsvDto).toList();
         saveToCSV(monarchDtos, TARGET_PATH + MONARCHS_FILE);
 
         List<ReignCsvDto> reignDtos = new ArrayList<>();
@@ -146,7 +146,7 @@ public class ExportService {
                 .build();
     }
 
-    private MonarchCsvDto toMonarchDto(Monarch monarch) {
+    private MonarchCsvDto toMonarchCsvDto(Monarch monarch) {
         return MonarchCsvDto.builder()
                 .id(monarch.getId().toString())
                 .name(monarch.getName().replace(',', '|'))
@@ -157,6 +157,7 @@ public class ExportService {
                 .status(monarch.getStatus())
                 .imageUrl(Strings.isBlank(monarch.getImageUrl()) ? "" : monarch.getImageUrl())
                 .imageCaption(Strings.isBlank(monarch.getImageCaption())? "": monarch.getImageCaption().replace(',', '|'))
+                .description(monarch.getDescription()==null ? "" : monarch.getDescription().replace(',', '|'))
                 .build();
     }
 

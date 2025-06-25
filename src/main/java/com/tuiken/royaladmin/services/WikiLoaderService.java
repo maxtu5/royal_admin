@@ -1,7 +1,6 @@
 package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.builders.PersonBuilder;
-import com.tuiken.royaladmin.datalayer.ProvenenceRepository;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.ThroneRepository;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
@@ -11,7 +10,6 @@ import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
-import com.tuiken.royaladmin.model.workflows.SaveFamilyConfiguration;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +17,6 @@ import org.apache.logging.log4j.util.Strings;
 import org.json.JSONArray;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -41,8 +37,6 @@ public class WikiLoaderService {
     private final ThroneRepository throneRepository;
     private final ReignRepository reignRepository;
     private final ProvenanceService provenanceService;
-    private final ProvenenceRepository provenenceRepository;
-
 
     @Transactional
     public MonarchApiDto addToThroneNext(Country country) {
@@ -130,14 +124,14 @@ public class WikiLoaderService {
 
     public List<MonarchApiDto> loadRulersFamilyMembers(Country country, int quantity, int depth) {
         List<UUID> idsToLoad = findUnresolvedIds(country, quantity, depth);
-        return idsToLoad.stream().map(id->loadFamilyOne(id, country)).toList();
+        return idsToLoad.stream().map(this::loadFamilyOne).toList();
     }
 
     private List<UUID> findUnresolvedIds(Country country, int quantity, int maxDepth) {
         List<UUID> retval = new ArrayList<>();
 
         Throne throne = throneRoom.loadThroneByCountry(country);
-        if (throne == null || throne.getReigns().size() == 0) return retval;
+        if (throne == null || throne.getReigns().isEmpty()) return retval;
 
         Set<UUID> idsOnly = throne.getReigns().stream()
                 .map(Reign::getId)
@@ -145,10 +139,9 @@ public class WikiLoaderService {
                 .map(Monarch::getId).collect(Collectors.toSet());
 
         int depth = 0;
-        while (retval.size()<quantity && depth<maxDepth)
-        {
+        while (retval.size() < quantity && depth < maxDepth) {
             List<MonarchIdStatus> monarchsLevel = monarchService.finByManyId(idsOnly);
-            List<MonarchIdStatus> monarchsLevelUnresolved = monarchsLevel.stream().filter(ids->ids.getStatus()!=PersonStatus.RESOLVED).toList();
+            List<MonarchIdStatus> monarchsLevelUnresolved = monarchsLevel.stream().filter(ids -> ids.getStatus() != PersonStatus.RESOLVED).toList();
             retval.addAll(monarchsLevelUnresolved.stream().map(MonarchIdStatus::getId).limit(quantity - retval.size()).toList());
             idsOnly = provenanceService.findAllRelatives(monarchsLevel.stream().map(MonarchIdStatus::getId).toList());
             depth++;
@@ -157,9 +150,8 @@ public class WikiLoaderService {
         return retval;
     }
 
-    private MonarchApiDto loadFamilyOne(UUID id, Country country) {
+    private MonarchApiDto loadFamilyOne(UUID id) {
         Monarch monarch = monarchService.finById(id);
-
         System.out.printf("\n+++ Loading family for %s +++%n", monarch.getName());
 
         Monarch unmanaged = new Monarch(monarch.getUrl());
@@ -169,23 +161,15 @@ public class WikiLoaderService {
         unmanaged.setBirth(monarch.getBirth());
         unmanaged.setDeath(monarch.getDeath());
 
-        LoadFamilyConfiguration configuration = retrieverService.createLoadFamilyConfiguration(
-                unmanaged, country);
+        LoadFamilyConfiguration configuration = retrieverService.createLoadFamilyConfiguration(unmanaged);
         configuration.print();
+        retrieverService.saveLoaded(configuration);
 
-        try {
-            SaveFamilyConfiguration saveConfig = retrieverService.retrieveFamily(configuration);
-            saveConfig.print();
+        monarch.setStatus(PersonStatus.RESOLVED);
+        monarchService.save(monarch);
 
-            provenanceService.saveFamily(saveConfig);
-            monarch.setStatus(PersonStatus.RESOLVED);
-            monarchService.save(monarch);
-        } catch (IOException | URISyntaxException e) {
-            System.out.println("Crashed");
-            return null;
-        }
         MonarchApiDto retval = monarchService.toApiDto(monarch);
-        Provenence provenence = provenenceRepository.findById(monarch.getId()).orElse(null);
+        Provenence provenence = provenanceService.findById(monarch.getId());
         retval.setFamily(provenanceService.toFamilyDto(monarch, provenence));
         return retval;
     }

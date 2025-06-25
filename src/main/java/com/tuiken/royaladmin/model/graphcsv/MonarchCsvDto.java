@@ -30,5 +30,7 @@ public class MonarchCsvDto {
     String imageUrl;
     @CsvBindByPosition(position = 8)
     String imageCaption;
+    @CsvBindByPosition(position = 9)
+    String description;
 
 }

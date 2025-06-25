@@ -215,7 +215,8 @@ public enum House {
     HUGEL("Hügel"),
     GRIMALDI("Grimaldi"),
     POLIGNAC("Polignac"),
-    MERODE("Merode");
+    MERODE("Merode"),
+    MUNSO("Munsö");
 
     private final String label;
 

@@ -7,7 +7,6 @@ import com.tuiken.royaladmin.model.api.output.ShortMonarchDto;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.enums.Gender;
-import com.tuiken.royaladmin.model.workflows.SaveFamilyConfiguration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,15 +52,13 @@ public class ProvenanceService {
                 .collect(Collectors.toSet());
     }
 
-    public void saveFamily(SaveFamilyConfiguration saveConfig) {
-        for (Provenence source : saveConfig.getToCreate()) {
+    public Provenence saveOrMerge(Provenence source) {
             Provenence existing = provenenceRepository.findById(source.getId()).orElse(source);
             if (existing != source) {
                 if (existing.getFather() == null && source.getFather() != null) existing.setFather(source.getFather());
                 if (existing.getMother() == null && source.getMother() != null) existing.setMother(source.getMother());
             }
-            provenenceRepository.save(existing);
-        }
+            return provenenceRepository.save(existing);
     }
 
     public FamilyDto toFamilyDto(Monarch monarch, Provenence provenence) {
@@ -125,4 +122,15 @@ public class ProvenanceService {
         return retval;
     }
 
+    public List<Provenence> findByMother(UUID id) {
+        return provenenceRepository.findByMother(id);
+    }
+
+    public List<Provenence> findByFather(UUID id) {
+        return provenenceRepository.findByFather(id);
+    }
+
+    public Provenence findById(UUID id) {
+        return provenenceRepository.findById(id).orElse(null);
+    }
 }

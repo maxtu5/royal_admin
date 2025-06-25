@@ -34,18 +34,10 @@ public class PersonBuilder {
         System.out.println("Reading from source: " + resolvedUrl);
 
         Monarch monarch = monarchService.findByUrl(resolvedUrl);
-
-        if (monarch == null) {
-            monarch = buildPerson(resolvedUrl);
-            if (monarch == null) {
-                System.out.println("== FAILED to create attempt failed");
-            }
-        } else {
-            System.out.println("== Exists");
-        }
-//        if (monarch == null) {
-//            monarch.setGender(gender);
-//        }
+        if (monarch != null) System.out.println("== Exists");
+        monarch = monarch == null ? buildPerson(url) : monarch;
+        if (monarch == null) System.out.println("== FAILED to create attempt failed");
+        if (monarch != null && monarch.getGender() == null) monarch.setGender(gender);
         return monarch;
     }
 
@@ -56,6 +48,7 @@ public class PersonBuilder {
 
             Monarch monarch = new Monarch(url);
             monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
+            monarch.setGender(Gender.fromTitle(monarch.getName()));
             monarch.setBirth(RetrieverService.retrieveOneDate(jsonArray, "Born"));
             monarch.setDeath(RetrieverService.retrieveOneDate(jsonArray, "Died"));
             monarch.setHouse(RetrieverService.retrieveHouses(jsonArray));
@@ -82,15 +75,15 @@ public class PersonBuilder {
                     .filter(Objects::nonNull)
                     .findFirst().orElse(null);
         }
-        if (retval == null) {
-            String aiResolved = aiResolverService.findGender(monarch.getName());
-            try {
-                retval = Gender.valueOf(aiResolved);
-            } catch (IllegalArgumentException e) {
-                System.out.println("UNKNOWN???");
-            }
-            System.out.println(monarch.getName() + " defined by AI as " + retval);
-        }
+//        if (retval == null) {
+//            String aiResolved = aiResolverService.findGender(monarch.getName());
+//            try {
+//                retval = Gender.valueOf(aiResolved);
+//            } catch (IllegalArgumentException e) {
+//                System.out.println("UNKNOWN???");
+//            }
+//            System.out.println(monarch.getName() + " defined by AI as " + retval);
+//        }
         return retval;
     }
 

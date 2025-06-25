@@ -3,7 +3,6 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.workflows.UnhandledRecord;
 import com.tuiken.royaladmin.utils.JsonUtils;
@@ -13,14 +12,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
-import java.text.Normalizer;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SmartIssueSearchService {
 
+    private static final String WIKI_URL_TEMPLATE = "https://en.wikipedia.org%s";
     private final PersonBuilder personBuilder;
     private final MonarchService monarchService;
     private final AiResolverService aiResolverService;
@@ -31,42 +29,23 @@ public class SmartIssueSearchService {
     private static final String SIMPLE_URL_PREFIX = "https://simple.wikipedia.org/wiki/";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";
 
-    List<Monarch> smartExtractWithCreate(JSONArray jsonArray, Monarch root, Country rootCountry) {
-        List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-        List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...");
-        Set<String> allLinks = JsonUtils.readAllLinks(jsonArray).stream()
-                .map(this::convertChildLink)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+    List<Monarch> findInAllLinksParentCheck(List<JSONObject> issue, Monarch root, Map<String, List<String>> allLinks) {
         List<String> names = JsonUtils.readFromValues(issue).stream()
-                .filter(s -> !s.equals("Illegitimate:"))
-                .collect(Collectors.toList());
+                .map(s -> s.replaceAll("Illegitimate:", "").trim())
+                .filter(Strings::isNotBlank)
+                .toList();
 
-        int fuzzy = 0;
-        int ai = 0;
-
-        List<Monarch> retval = new ArrayList<>();
-
-        for (String name : names) {
-            String foundUrl = fuzzyFind(name, allLinks);
-            if (Strings.isBlank(foundUrl)) {
-                foundUrl = aiResolverService.findChild(name, root.getName(), rootCountry);
-            }
-            if (!Strings.isBlank(foundUrl)) {
-                Monarch newPerson = personBuilder.findOrCreate(foundUrl, null);
-                if (newPerson != null
-                        && checkParent(newPerson, root)
-                ) {
-                    retval.add(newPerson);
-                } else {
-                    saveUnhandledRecord(name, foundUrl, root.getUrl());
-                }
-            } else {
-                saveUnhandledRecord(name, foundUrl, root.getUrl());
-            }
-        }
-        System.out.println("* fuzzy " + fuzzy + "/" + names.size() + ", ai " + ai + "/" + names.size());
-        return retval;
+        return names.stream()
+                .map(name -> {
+                    String url = findInAllLinks(name, allLinks);
+                    if (Strings.isBlank(url)) saveUnhandledRecord(name, url, root.getUrl());
+                    return url;
+                })
+                .filter(Strings::isNotBlank)
+                .filter(url -> checkParent(url, root, allLinks))
+                .map(url -> personBuilder.findOrCreate(url, null))
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     public String convertChildLink(String src) {
@@ -82,65 +61,40 @@ public class SmartIssueSearchService {
         return retval;
     }
 
-    private boolean checkParent(Monarch monarch, Monarch parent) {
+    private boolean checkParent(String childUrl, Monarch parent, Map<String, List<String>> allLinks) {
         JSONArray jsonArray = new JSONArray();
         try {
-            jsonArray=wikiService.read(monarch.getUrl());
+            jsonArray = wikiService.read(childUrl);
         } catch (WikiApiException e) {
             System.out.println("Oiiii wiki geve error");
         }
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-        if (parent.getGender().equals(Gender.MALE)) {
-            List<JSONObject> father = JsonUtils.drillForName(infoboxes, "Father");
-            String fatherUrl = JsonUtils.readFromLinks(father, "url").stream()
-                    .map(this::convertChildLink)
-                    .filter(Objects::nonNull)
-                    .findFirst().orElse(null);
-            if (fatherUrl != null) {
-                fatherUrl = resolver.resolve(fatherUrl);
-                return parent.getUrl().equals(fatherUrl);
-            } else {
-                return false;
-            }
-        } else {
-            List<JSONObject> mother = JsonUtils.drillForName(infoboxes, "Mother");
-            String motherUrl = JsonUtils.readFromLinks(mother, "url").stream()
-                    .map(this::convertChildLink)
-                    .filter(Objects::nonNull)
-                    .findFirst().orElse(null);
-            if (motherUrl != null) {
-                motherUrl = resolver.resolve(motherUrl);
-                return parent.getUrl().equals(motherUrl);
-            } else {
-                return false;
-            }
-        }
+        return isRightParent(
+                parent.getGender().equals(Gender.MALE) ? "Father" : "Mother",
+                infoboxes,
+                parent.getUrl(),
+                allLinks);
     }
 
-    private String fuzzyFind(String name, Set<String> allNames) {
+    private boolean isRightParent(String parentKey, List<JSONObject> infoboxes, String url, Map<String, List<String>> allLinks) {
+        List<JSONObject> parent = JsonUtils.drillForName(infoboxes, parentKey);
+        String parentUrl = JsonUtils.readFromLinks(parent, "url").stream()
+                .map(this::convertChildLink)
+                .filter(Objects::nonNull)
+                .findFirst().orElse(null);
+        parentUrl = parentUrl != null ? parentUrl : findInAllLinks(
+                JsonUtils.readFromValues(parent).stream()
+                        .findFirst().orElse(null), allLinks);
+        return parentUrl != null && url.equals(resolver.resolve(parentUrl));
+    }
 
-        String[] tokens_sample = Normalizer.normalize(name, Normalizer.Form.NFD)
-                .replaceAll("[^\\p{ASCII}]", "")
-                .replaceAll(",", "")
-                .split(" ");
-
-        for (String path : allNames) {
-            String[] searched = Normalizer.normalize(path, Normalizer.Form.NFD)
-                    .replaceAll("[^\\p{ASCII}]", "")
-                    .replace(NORMAL_URL_PREFIX, "")
-                    .replaceAll(",", "")
-                    .split("_");
-
-            int notFound = 0;
-            for (int i = 0; i < tokens_sample.length; i++) {
-                String tofind = tokens_sample[i];
-                if (Arrays.stream(searched).noneMatch(ss -> ss.equalsIgnoreCase(tofind))) {
-                    notFound++;
-                }
-            }
-            if (notFound < 1) return path;
-        }
-        return null;
+    public String findInAllLinks(String name, Map<String, List<String>> allNames) {
+        return allNames.entrySet().stream()
+                .filter(links -> links.getValue().contains(name))
+                .findFirst()
+                .map(Map.Entry::getKey)
+                .map(url -> String.format(WIKI_URL_TEMPLATE, url))
+                .orElse(null);
     }
 
     private void saveUnhandledRecord(String name, String childUrl, String parentUrl) {
