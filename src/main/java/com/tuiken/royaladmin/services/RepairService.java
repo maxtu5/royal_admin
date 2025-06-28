@@ -1,5 +1,6 @@
 package com.tuiken.royaladmin.services;
 
+import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
@@ -9,6 +10,7 @@ import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
 import com.tuiken.royaladmin.model.entities.Throne;
 import com.tuiken.royaladmin.model.enums.Gender;
+import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,9 @@ public class RepairService {
     private final ProvenanceService provenanceService;
     private final LinkResolver linkResolver;
     private final ThroneService throneService;
+    private final RetrieverService retrieverService;
+    private final PersonBuilder personBuilder;
+    private final WikiDirectService wikiDirectService;
 
     @Transactional
     public boolean reportGender() {
@@ -72,7 +77,7 @@ public class RepairService {
     }
 
     @Transactional
-    public boolean reportMissingHouses() throws WikiApiException {
+    public boolean reportMissingHouses() {
         List<Monarch> allPeople = monarchService.loadAllMonarchs();
         Set<String> allHouses = new HashSet<>();
         for (Monarch monarch : allPeople) {
@@ -95,46 +100,83 @@ public class RepairService {
 
     @Transactional
     public boolean wrongParents() {
-        Iterable<WikiCacheRecord> all = wikiCacheRecordRepository.findAll();
-        final int[] i = new int[]{0};
+        List<WikiCacheRecord> all = wikiCacheRecordRepository.findAll();
+        int[] counts = {0, 0, 0, 0, 0, 0};
         all.forEach(record -> {
-            if (i[0] % 10 == 0) System.out.println(i[0]);
+            if (counts[0] % 100 == 0) System.out.println(counts[0]);
             Monarch monarch = monarchService.findByUrl(record.getUrl());
-            if (monarch != null) {
-                Monarch parent = monarch == null ? null : provenanceService.findMother(monarch);
-                String parentDb = parent == null ? null : parent.getUrl();
-                try {
-                    JSONArray jsonArray = wikiService.read(record.getUrl());
-                    List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-                    List<JSONObject> mother = JsonUtils.drillForName(infoboxes, "Mother");
-                    String parentUrl = JsonUtils.readFromLinks(mother, "url").stream()
-                            .map(smartIssueSearchService::convertChildLink)
-                            .filter(Objects::nonNull)
-                            .findFirst().orElse(null);
-//                    if (parentDb == null && parentUrl != null) {
-//                        System.out.println(monarch.getUrl());
-//                        System.out.println("null");
-//                        System.out.println(parentUrl);
-//                        System.out.println();
-//                    }
-                    if (parentDb != null && parentUrl != null && !parentDb.equals(parentUrl)) {
-                        parentUrl = linkResolver.resolve(parentUrl);
-                        if (!parentDb.equals(parentUrl)) {
-                            if (i[0] % 10 != 0) System.out.println(i[0]);
+            if (monarch == null || monarch.getStatus().equals(PersonStatus.NEW_URL)) return;
+            counts[0]++;
 
-                            System.out.println(monarch.getUrl());
-                            System.out.println(parentDb);
-                            System.out.println(parentUrl);
-//                        System.out.println();
-                        }
-                    }
+            JSONArray jsonArray = new JSONArray(record.getBody());
+            List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
 
-                } catch (WikiApiException e) {
-                    throw new RuntimeException(e);
+            List<String> parents = retrieverService.extractParents(infoboxes, new HashMap<>());
+            if (parents.size()==1) {
+                counts[1]++;
+                Monarch unknownParent = personBuilder.findOrCreate(parents.get(0), null);
+                if (unknownParent == null) return;
+                Monarch father = provenanceService.findFather(monarch);
+                Monarch mother = provenanceService.findMother(monarch);
+                if (father!=null && unknownParent.getUrl().equals(father.getUrl()) || mother!=null && unknownParent.getUrl().equals(mother.getUrl())) return;
+                System.out.println(monarch.getName());
+                if (Gender.MALE.equals(unknownParent.getGender()) && father==null) {
+                    if (unknownParent.getId()==null) monarchService.save(unknownParent);
+                    provenanceService.setParent(monarch, unknownParent);
                 }
-                i[0]++;
+//                if (father == null) {
+//                    Monarch mum = personBuilder.findOrCreate(parents.get(0), Gender.MALE);
+//                    if (mum != null) {
+
+//                        mum = monarchService.save(mum);
+//                        provenanceService.setParent(monarch, mum);
+//                    }
+//                }
+//                System.out.println((father == null ? "" : "*") + (father != null && father.getUrl().equals(parents.get(0)) ? "+" : "") + parents.get(0));
+//                System.out.println((mother == null ? "" : "*") + (mother != null && mother.getUrl().equals(parents.get(1)) ? "+" : "") + parents.get(1));
             }
+
+//            parentNames.forEach(System.out::println);
+//            parentUrls.forEach(System.out::println);
+//
+//            if (!parentNames.isEmpty()) counts[2]++;
+//            if (!parentUrls.isEmpty()) counts[3]++;
+//            if (!parentUrls.isEmpty() && !parentNames.isEmpty()) counts[4]++;
+//            if (parentUrls.isEmpty() && parentNames.isEmpty()) counts[5]++;
+
+//            Monarch mother = provenanceService.findMother(monarch);
+//            if (mother == null) return;
+//            counts[1]++;
+//            String parentDb = mother.getUrl();
+//
+//            JSONArray jsonArray = wikiService.read(record.getUrl());
+//            List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
+//            List<JSONObject> motherO = JsonUtils.drillForName(infoboxes, "Mother");
+//            String parentUrl = JsonUtils.readFromLinks(motherO, "url").stream()
+//                    .map(smartIssueSearchService::convertChildLink)
+//                    .filter(Objects::nonNull)
+//                    .findFirst().orElse(null);
+//            if (parentUrl != null) counts[2]++;
+
+//            if (parentDb != null && parentUrl != null && !parentDb.equals(parentUrl)) {
+//                parentUrl = linkResolver.resolve(parentUrl);
+//                if (!parentDb.equals(parentUrl)) {
+//                    if (i[0] % 10 != 0) System.out.println(i[0]);
+//
+//                    System.out.println(monarch.getUrl());
+//                    System.out.println(parentDb);
+//                    System.out.println(parentUrl);
+////                        System.out.println();
+//                }
+//            }
         });
+        System.out.println("With saved cache: " + all.size());
+        System.out.println("In database: " + counts[0]);
+        System.out.println("With Parents in database: " + counts[1]);
+//        System.out.println("With names: "+counts[2]);
+//        System.out.println("With urls: "+counts[3]);
+//        System.out.println("With none: "+counts[5]);
+
         return true;
     }
 
@@ -232,20 +274,17 @@ public class RepairService {
         monarches.stream()
                 .limit(10)
                 .forEach(m -> {
-                    try {
-                        JSONArray monarchJson = wikiService.read(m.getUrl());
-                        List<JSONObject> inf = JsonUtils.readInfoboxes(monarchJson);
-                        for (JSONObject infobox : inf) {
-                            JSONObject image = JsonUtils.findImage(inf);
-                            if (image.has("content_url")) {
-                                m.setImageUrl(image.getString("content_url"));
-                                if (image.has("caption")) m.setImageCaption(image.getString("caption"));
-                                monarchService.save(m);
-                                System.out.println(m.getUrl());
-                            }
+                    JSONArray monarchJson = wikiService.read(m.getUrl());
+                    List<JSONObject> inf = JsonUtils.readInfoboxes(monarchJson);
+                    for (JSONObject infobox : inf) {
+                        JSONObject image = JsonUtils.findImage(inf);
+                        if (image.has("content_url")) {
+                            m.setImageUrl(image.getString("content_url"));
+                            if (image.has("caption")) m.setImageCaption(image.getString("caption"));
+                            monarchService.save(m);
+                            System.out.println(m.getUrl());
                         }
-                    } catch (WikiApiException e) {
-                        throw new RuntimeException(e);
+
                     }
                 });
 //        monarches.forEach(m-> System.out.println(m.getUrl()));

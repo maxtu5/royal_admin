@@ -42,7 +42,7 @@ public class SmartIssueSearchService {
                     return url;
                 })
                 .filter(Strings::isNotBlank)
-                .filter(url -> checkParent(url, root, allLinks))
+//                .filter(url -> checkParent(url, root, allLinks))
                 .map(url -> personBuilder.findOrCreate(url, null))
                 .filter(Objects::nonNull)
                 .toList();
@@ -61,20 +61,15 @@ public class SmartIssueSearchService {
         return retval;
     }
 
-    private boolean checkParent(String childUrl, Monarch parent, Map<String, List<String>> allLinks) {
-        JSONArray jsonArray = new JSONArray();
-        try {
-            jsonArray = wikiService.read(childUrl);
-        } catch (WikiApiException e) {
-            System.out.println("Oiiii wiki geve error");
-        }
-        List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-        return isRightParent(
-                parent.getGender().equals(Gender.MALE) ? "Father" : "Mother",
-                infoboxes,
-                parent.getUrl(),
-                allLinks);
-    }
+//    private boolean checkParent(String childUrl, Monarch parent, Map<String, List<String>> allLinks) {
+//        JSONArray jsonArray = wikiService.read(childUrl);
+//        List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
+//        return isRightParent(
+//                parent.getGender().equals(Gender.MALE) ? "Father" : "Mother",
+//                infoboxes,
+//                parent.getUrl(),
+//                allLinks);
+//    }
 
     private boolean isRightParent(String parentKey, List<JSONObject> infoboxes, String url, Map<String, List<String>> allLinks) {
         List<JSONObject> parent = JsonUtils.drillForName(infoboxes, parentKey);

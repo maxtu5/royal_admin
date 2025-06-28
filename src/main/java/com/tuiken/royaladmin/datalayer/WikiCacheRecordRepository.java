@@ -14,5 +14,6 @@ public interface WikiCacheRecordRepository extends CrudRepository<WikiCacheRecor
 
     Iterable<WikiCacheRecord> findFirst100ByOrderByCacheId();
 
+    List<WikiCacheRecord> findAll();
     boolean existsByUrl(String url);
 }

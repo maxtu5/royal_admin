@@ -38,11 +38,9 @@ public class RetrieverService {
                 .rootId(root.getId()).rootUrl(root.getUrl()).rootGender(root.getGender()).build();
 
         JSONArray jsonArray = new JSONArray();
-        try {
-            jsonArray = wikiService.read(root.getUrl());
-        } catch (WikiApiException e) {
-            System.out.println("Wiki API error");
-        }
+
+        jsonArray = wikiService.read(root.getUrl());
+
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
         Map<String, List<String>> allLinks = wikiDirectService.allLinks(root.getUrl());
 
@@ -65,13 +63,33 @@ public class RetrieverService {
             configuration.setMother(monarch);
         }
 
+        if (motherUrl == null && fatherUrl == null) {
+            List<String> parents = extractParents(infoboxes, allLinks);
+            System.out.printf("Found %s parents%n", parents.size());
+            if (parents.size() == 2) {
+                Monarch father = personBuilder.findOrCreate(parents.get(0), Gender.FEMALE);
+                configuration.setFather(father);
+                Monarch mother = personBuilder.findOrCreate(parents.get(1), Gender.MALE);
+                configuration.setMother(mother);
+            }
+            if (parents.size() == 1) {
+                Monarch parent = personBuilder.findOrCreate(parents.get(0), null);
+                if (Gender.MALE.equals(parent.getGender())) configuration.setFather(parent);
+                if (Gender.FEMALE.equals(parent.getGender())) configuration.setMother(parent);
+            }
+        }
+
         // children
         List<Provenence> issueP = root.getGender() == Gender.MALE ?
                 provenanceService.findByFather(root.getId()) :
                 provenanceService.findByMother(root.getId());
         configuration.setIssueIds(issueP.stream()
-                .map(Provenence::getId)
-                .collect(Collectors.toList()));
+                        .
+
+                map(Provenence::getId)
+                        .
+
+                collect(Collectors.toList()));
 
         List<Monarch> children = extractIssue(infoboxes, root, allLinks);
         configuration.setIssue(children);
@@ -89,11 +107,30 @@ public class RetrieverService {
                     .findFirst().orElse(null);
             parentUrl = smartIssueSearchService.findInAllLinks(parentName, allLinks);
         }
-        return parentUrl==null ? parentUrl : resolver.resolve(parentUrl);
+        return parentUrl == null ? parentUrl : resolver.resolve(parentUrl);
+    }
+
+    public List<String> extractParents(List<JSONObject> infoboxes, Map<String, List<String>> allLinks) {
+        List<JSONObject> parent = JsonUtils.drillForName(infoboxes, "Parents", "Parent(s)");
+        if (parent.isEmpty()) return new ArrayList<>();
+        List<String> parentUrls = JsonUtils.readFromLinks(parent, "url").stream()
+                .map(smartIssueSearchService::convertChildLink)
+                .filter(Objects::nonNull)
+                .map(resolver::resolve)
+                .toList();
+        if (!parentUrls.isEmpty()) return parentUrls;
+
+        List<String> parentNames = JsonUtils.readFromValues(parent);
+        return parentNames.stream()
+                .map(s -> s.replace("(mother)", "").replace("(father)", "").trim())
+                .map(n -> smartIssueSearchService.findInAllLinks(n, allLinks))
+                .filter(Objects::nonNull)
+                .map(resolver::resolve)
+                .toList();
     }
 
     private List<Monarch> extractIssue(List<JSONObject> infoboxes, Monarch root, Map<String, List<String>> allLinks) {
-        List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Issue More", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...");
+        List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Issue More", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...", "Children");
 
         List<String> issueUrls = JsonUtils.readFromLinks(issue, "url").stream()
                 .map(smartIssueSearchService::convertChildLink)
@@ -131,7 +168,7 @@ public class RetrieverService {
             Monarch mother = configuration.getMother().getId() == null ?
                     monarchService.save(configuration.getMother()) :
                     configuration.getMother();
-            provenence.setFather(mother.getId());
+            provenence.setMother(mother.getId());
         }
         if (provenence.getFather() != null || provenence.getMother() != null) {
             provenanceService.saveOrMerge(provenence);
@@ -161,7 +198,7 @@ public class RetrieverService {
         System.out.println("Relations: " + savedRels);
     }
 
-    // +++++++ +++++++++++
+// +++++++ +++++++++++
 
     public static String retrieveProperty(JSONArray jsonArray, String propertyName) {
         Set<String> list = new HashSet<>();

@@ -1,7 +1,7 @@
 package com.tuiken.royaladmin.model.enums;
 
 public enum Gender {
-    MALE(new String[]{"King ", "Emperor", "Prince ", "Duke", "Earl", "Lord", "Count ", "Infante", "Elector", "Bishop", "Baron "}),
+    MALE(new String[]{"King ", "Emperor", "Prince ", "Duke", "Earl", "Lord", "Count ", "Infante", "Elector", "Bishop", "Baron ", "John ", "Master"}),
     FEMALE(new String[]{"Queen", "Empress", "Princess", "Duchess", "Lady", "Infanta","Viscountess", "Baroness", "Diana", "Landgravine", "Elizabeth", "Anne", "Countess"});
 
     Gender(String[] keywords) {

@@ -36,7 +36,7 @@ public class WikiService {
             """;
 
     @Transactional
-    public JSONArray read(String url) throws WikiApiException {
+    public JSONArray read(String url) {
 
         String[] tokens = url.split("/");
         String requestUrl = String.format(ENT_WIKI_STRUCTURED_URL, tokens[tokens.length - 1]);
@@ -50,7 +50,13 @@ public class WikiService {
             return new JSONArray(cacheRecord.getBody());
         }
         // not found in cache, retrieve from wiki API
-        String rawResponse = loadFromWikiApi(resolvedUrl);
+        String rawResponse = null;
+        try {
+            rawResponse = loadFromWikiApi(resolvedUrl);
+        } catch (WikiApiException e) {
+            System.out.println("WikiApiException: " + e.getMessage());
+            return null;
+        }
         if (rawResponse == null) return null;
         JSONArray retval = new JSONArray(rawResponse);
         // save in cache

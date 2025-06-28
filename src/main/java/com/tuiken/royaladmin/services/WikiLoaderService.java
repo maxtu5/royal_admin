@@ -82,11 +82,7 @@ public class WikiLoaderService {
             System.out.println("Latest ruler is " + lastMonarch.getName());
 
             JSONArray jsonArray = null;
-            try {
-                jsonArray = wikiService.read(lastMonarch.getUrl());
-            } catch (WikiApiException e) {
-                return null;
-            }
+            jsonArray = wikiService.read(lastMonarch.getUrl());
             return retrieverService.retrievePredecessor(jsonArray, country);
         }
         return null;

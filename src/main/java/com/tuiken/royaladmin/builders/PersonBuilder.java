@@ -42,25 +42,21 @@ public class PersonBuilder {
     }
 
     public Monarch buildPerson(String url) {
-        try {
-            JSONArray jsonArray = wikiService.read(url);
-            if (jsonArray == null || JsonUtils.readInfoboxes(jsonArray).size() == 0) return null;
+        JSONArray jsonArray = wikiService.read(url);
+        if (jsonArray == null || JsonUtils.readInfoboxes(jsonArray).size() == 0) return null;
 
-            Monarch monarch = new Monarch(url);
-            monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
-            monarch.setGender(Gender.fromTitle(monarch.getName()));
-            monarch.setBirth(RetrieverService.retrieveOneDate(jsonArray, "Born"));
-            monarch.setDeath(RetrieverService.retrieveOneDate(jsonArray, "Died"));
-            monarch.setHouse(RetrieverService.retrieveHouses(jsonArray));
-            String[] imageData = RetrieverService.retrieveImage(jsonArray);
-            monarch.setImageUrl(imageData[0]);
-            monarch.setImageCaption(imageData[1]);
-            monarch.setStatus(PersonStatus.NEW_URL);
-            System.out.println("== Created person " + monarch.getName());
-            return monarch;
-        } catch (WikiApiException e) {
-            return null;
-        }
+        Monarch monarch = new Monarch(url);
+        monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
+        monarch.setGender(Gender.fromTitle(monarch.getName()));
+        monarch.setBirth(RetrieverService.retrieveOneDate(jsonArray, "Born"));
+        monarch.setDeath(RetrieverService.retrieveOneDate(jsonArray, "Died"));
+        monarch.setHouse(RetrieverService.retrieveHouses(jsonArray));
+        String[] imageData = RetrieverService.retrieveImage(jsonArray);
+        monarch.setImageUrl(imageData[0]);
+        monarch.setImageCaption(imageData[1]);
+        monarch.setStatus(PersonStatus.NEW_URL);
+        System.out.println("== Created person " + monarch.getName());
+        return monarch;
     }
 
     public Gender detectGender(Monarch monarch) {
@@ -88,13 +84,11 @@ public class PersonBuilder {
     }
 
     public List<Reign> createReignsWithSave(String url, Country country) {
-        try {
-            JSONArray jsonArray = wikiService.read(url);
-            return RetrieverService.retrieveReigns(jsonArray, country).stream()
-                    .map(reignRepository::save).collect(Collectors.toList());
-        } catch (WikiApiException e) {
-            return null;
-        }
+
+        JSONArray jsonArray = wikiService.read(url);
+        return RetrieverService.retrieveReigns(jsonArray, country).stream()
+                .map(reignRepository::save).collect(Collectors.toList());
+
     }
 
     public MonarchApiDto createFromUrl(String url) {
