@@ -16,9 +16,12 @@ public class RepairController {
     @GetMapping(path = "/{code}")
     public boolean repair(@PathVariable int code) throws WikiApiException {
         switch (code) {
+            case 000: return repairService.reportProcess();
             case 100: return repairService.reportGender();
             case 200: return repairService.reportMissingHouses();
-            case 300: return repairService.wrongParents();
+            case 201: return repairService.findUnknownHouses();
+            case 202: return repairService.rereadHousesFromCache();
+
             case 400: return repairService.missingIdsProvenence();
             case 500: return repairService.reportReignCollisions();
             case 600: return repairService.unresolvedUrls();

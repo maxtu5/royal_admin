@@ -10,6 +10,7 @@ import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
 import com.tuiken.royaladmin.model.entities.Throne;
 import com.tuiken.royaladmin.model.enums.Gender;
+import com.tuiken.royaladmin.model.enums.House;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import jakarta.transaction.Transactional;
@@ -40,6 +41,11 @@ public class RepairService {
     private final RetrieverService retrieverService;
     private final PersonBuilder personBuilder;
     private final WikiDirectService wikiDirectService;
+
+    public boolean reportProcess() {
+        monarchService.reportProcess();
+        return true;
+    }
 
     @Transactional
     public boolean reportGender() {
@@ -80,11 +86,21 @@ public class RepairService {
     public boolean reportMissingHouses() {
         List<Monarch> allPeople = monarchService.loadAllMonarchs();
         Set<String> allHouses = new HashSet<>();
+        System.out.println("Total: " + allPeople.size() + "\nWith house: " +
+                allPeople.stream().filter(m -> !m.getHouse().isEmpty()).count() + "\nWith 2+: " +
+                allPeople.stream().filter(m -> m.getHouse().size() > 1).peek(m -> System.out.println(m.getUrl())).count());
+    return true;
+    }
+
+    @Transactional
+    public boolean findUnknownHouses() {
+        List<Monarch> allPeople = monarchService.loadAllMonarchs();
+        Set<String> allHouses = new HashSet<>();
         for (Monarch monarch : allPeople) {
             if (monarch.getHouse().isEmpty()) {
                 JSONArray jsonArray = wikiService.read(monarch.getUrl());
                 List<JSONObject> list = JsonUtils.arrayTolist(jsonArray);
-                List<JSONObject> houseObjects = JsonUtils.drillForName(list, "House", "Dynasty");
+                List<JSONObject> houseObjects = JsonUtils.drillForName(list, "House", "Dynasty", "Noble Family");
                 Set<String> houseStrings = JsonUtils.readFromLinks(houseObjects, "text").stream()
                         .map(s -> s.contains("House of") ? s.replace("House of", "").trim() : s)
                         .filter(s -> !s.equalsIgnoreCase("House"))
@@ -97,100 +113,50 @@ public class RepairService {
         });
         return true;
     }
+    
+    public boolean rereadHousesFromCache() {
 
-    @Transactional
-    public boolean wrongParents() {
-        List<WikiCacheRecord> all = wikiCacheRecordRepository.findAll();
-        int[] counts = {0, 0, 0, 0, 0, 0};
-        all.forEach(record -> {
-            if (counts[0] % 100 == 0) System.out.println(counts[0]);
-            Monarch monarch = monarchService.findByUrl(record.getUrl());
-            if (monarch == null || monarch.getStatus().equals(PersonStatus.NEW_URL)) return;
-            counts[0]++;
+        List<Monarch> list = monarchService.loadAllMonarchs().stream()
+                .filter(m->m.getProcess()==null || !m.getProcess().equals("Done"))
+                .toList();
 
-            JSONArray jsonArray = new JSONArray(record.getBody());
-            List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-
-            List<String> parents = retrieverService.extractParents(infoboxes, new HashMap<>());
-            if (parents.size()==1) {
-                counts[1]++;
-                Monarch unknownParent = personBuilder.findOrCreate(parents.get(0), null);
-                if (unknownParent == null) return;
-                Monarch father = provenanceService.findFather(monarch);
-                Monarch mother = provenanceService.findMother(monarch);
-                if (father!=null && unknownParent.getUrl().equals(father.getUrl()) || mother!=null && unknownParent.getUrl().equals(mother.getUrl())) return;
-                System.out.println(monarch.getName());
-                if (Gender.MALE.equals(unknownParent.getGender()) && father==null) {
-                    if (unknownParent.getId()==null) monarchService.save(unknownParent);
-                    provenanceService.setParent(monarch, unknownParent);
-                }
-//                if (father == null) {
-//                    Monarch mum = personBuilder.findOrCreate(parents.get(0), Gender.MALE);
-//                    if (mum != null) {
-
-//                        mum = monarchService.save(mum);
-//                        provenanceService.setParent(monarch, mum);
-//                    }
-//                }
-//                System.out.println((father == null ? "" : "*") + (father != null && father.getUrl().equals(parents.get(0)) ? "+" : "") + parents.get(0));
-//                System.out.println((mother == null ? "" : "*") + (mother != null && mother.getUrl().equals(parents.get(1)) ? "+" : "") + parents.get(1));
-            }
-
-//            parentNames.forEach(System.out::println);
-//            parentUrls.forEach(System.out::println);
-//
-//            if (!parentNames.isEmpty()) counts[2]++;
-//            if (!parentUrls.isEmpty()) counts[3]++;
-//            if (!parentUrls.isEmpty() && !parentNames.isEmpty()) counts[4]++;
-//            if (parentUrls.isEmpty() && parentNames.isEmpty()) counts[5]++;
-
-//            Monarch mother = provenanceService.findMother(monarch);
-//            if (mother == null) return;
-//            counts[1]++;
-//            String parentDb = mother.getUrl();
-//
-//            JSONArray jsonArray = wikiService.read(record.getUrl());
-//            List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-//            List<JSONObject> motherO = JsonUtils.drillForName(infoboxes, "Mother");
-//            String parentUrl = JsonUtils.readFromLinks(motherO, "url").stream()
-//                    .map(smartIssueSearchService::convertChildLink)
-//                    .filter(Objects::nonNull)
-//                    .findFirst().orElse(null);
-//            if (parentUrl != null) counts[2]++;
-
-//            if (parentDb != null && parentUrl != null && !parentDb.equals(parentUrl)) {
-//                parentUrl = linkResolver.resolve(parentUrl);
-//                if (!parentDb.equals(parentUrl)) {
-//                    if (i[0] % 10 != 0) System.out.println(i[0]);
-//
-//                    System.out.println(monarch.getUrl());
-//                    System.out.println(parentDb);
-//                    System.out.println(parentUrl);
-////                        System.out.println();
-//                }
-//            }
+//                wikiCacheRecordRepository.findAll().stream()
+//                .map(cr -> monarchService.findByUrl(cr.getUrl()))
+//                .filter(Objects::nonNull)
+//                .filter(m->m.getProcess()==null || !m.getProcess().equals("Done"))
+////                .filter(m -> m.getHouse().size() > 1)
+//                .limit(100)
+//                .toList();
+        list.forEach(monarch->{
+            updateHouses(monarch);
         });
-        System.out.println("With saved cache: " + all.size());
-        System.out.println("In database: " + counts[0]);
-        System.out.println("With Parents in database: " + counts[1]);
-//        System.out.println("With names: "+counts[2]);
-//        System.out.println("With urls: "+counts[3]);
-//        System.out.println("With none: "+counts[5]);
 
+//        System.out.println("In cache: " + list.size());
         return true;
     }
 
-    public boolean missingIdsProvenence() {
+    @Transactional
+    public void updateHouses(Monarch monarch) {
+        System.out.println(monarch.getUrl());
+        JSONArray read = wikiService.read(monarch.getUrl());
+        Set<House> houses = RetrieverService.retrieveHouses(read);
+        houses.forEach(System.out::print);
+        System.out.println();
+        monarch.getHouse().forEach(System.out::print);
+        System.out.println();
+        houses.forEach(monarch.getHouse()::add);
+        monarch.setProcess("Done");
+        monarchService.save(monarch);
+    }
+
+       public boolean missingIdsProvenence() {
         List<Provenence> provenences = provenanceService.findAllProvenances().stream()
-                .filter(p -> {
-                    if (p.getMother() != null && monarchService.finById(p.getMother()) == null ||
+                .filter(p -> p.getMother() != null && monarchService.finById(p.getMother()) == null ||
                             p.getFather() != null && monarchService.finById(p.getFather()) == null ||
-                            monarchService.finById(p.getId()) == null) return true;
-                    return false;
-                })
-                .collect(Collectors.toList());
-        for (Provenence p :
-                provenences) {
+                            monarchService.finById(p.getId()) == null)
+                .toList();
+        System.out.println("Deleting provenences " + provenences.size());
+        for (Provenence p : provenences) {
             provenanceService.deleteProvenence(p);
         }
         return true;

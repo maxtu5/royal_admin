@@ -19,4 +19,6 @@ public interface MonarchRepository extends CrudRepository<Monarch, UUID> {
     List<MonarchIdStatus> findAllByIdIn(Set<UUID> ids);
 
     long countByStatus(PersonStatus status);
+
+    long countByProcess(String done);
 }

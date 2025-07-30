@@ -74,8 +74,10 @@ public class RetrieverService {
             }
             if (parents.size() == 1) {
                 Monarch parent = personBuilder.findOrCreate(parents.get(0), null);
-                if (Gender.MALE.equals(parent.getGender())) configuration.setFather(parent);
-                if (Gender.FEMALE.equals(parent.getGender())) configuration.setMother(parent);
+                if (parent != null) {
+                    if (Gender.MALE.equals(parent.getGender())) configuration.setFather(parent);
+                    if (Gender.FEMALE.equals(parent.getGender())) configuration.setMother(parent);
+                }
             }
         }
 
@@ -84,13 +86,8 @@ public class RetrieverService {
                 provenanceService.findByFather(root.getId()) :
                 provenanceService.findByMother(root.getId());
         configuration.setIssueIds(issueP.stream()
-                        .
-
-                map(Provenence::getId)
-                        .
-
-                collect(Collectors.toList()));
-
+                .map(Provenence::getId)
+                .collect(Collectors.toList()));
         List<Monarch> children = extractIssue(infoboxes, root, allLinks);
         configuration.setIssue(children);
         return configuration;
@@ -139,6 +136,7 @@ public class RetrieverService {
 
         List<Monarch> retval = issueUrls.isEmpty() ? smartIssueSearchService.findInAllLinksParentCheck(issue, root, allLinks) :
                 issueUrls.stream()
+                        .map(resolver::resolve)
                         .map(url -> personBuilder.findOrCreate(url, null))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
@@ -222,13 +220,31 @@ public class RetrieverService {
     }
 
     public static Set<House> retrieveHouses(JSONArray jsonArray) {
+        Set<String> captions = Set.of("House of", "Noble family", "Family", "agnatic", "Dynasty", "family", "Noble");
         List<JSONObject> list = JsonUtils.arrayTolist(jsonArray);
         List<JSONObject> houseObjects = JsonUtils.drillForName(list, "House", "Dynasty", "Noble family", "Family");
         Set<String> houseStrings = JsonUtils.readFromLinks(houseObjects, "text").stream()
-                .map(s -> s.contains("House of") ? s.replace("House of", "").trim() : s)
-                .filter(s -> !s.equalsIgnoreCase("House"))
+                .map(s -> {
+                    for (String sample: captions) {
+                        if (s.contains(sample)) return s.replaceAll(sample, "");
+                    }
+                    return s;
+                })
+                .map(s->s.trim().replaceAll("\\s{2,}", " "))
+                .filter(s->!s.isEmpty())
                 .collect(Collectors.toSet());
-
+        houseStrings.addAll(houseObjects.stream()
+                .map(JsonUtils::readValue)
+                .filter(Objects::nonNull)
+                .map(s -> {
+                    for (String sample: captions) {
+                        if (s.contains(sample)) return s.replaceAll(sample, "");
+                    }
+                    return s;
+                })
+                .map(s->s.trim().replaceAll("\\s{2,}", " "))
+                .filter(s->!s.isEmpty())
+                .collect(Collectors.toSet()));
         Set<House> houses = new HashSet<>();
         for (String s : houseStrings) {
             House house = House.HouseFromBeginningOfString(s);

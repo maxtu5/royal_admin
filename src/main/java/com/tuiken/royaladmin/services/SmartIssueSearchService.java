@@ -42,6 +42,7 @@ public class SmartIssueSearchService {
                     return url;
                 })
                 .filter(Strings::isNotBlank)
+                .map(resolver::resolve)
 //                .filter(url -> checkParent(url, root, allLinks))
                 .map(url -> personBuilder.findOrCreate(url, null))
                 .filter(Objects::nonNull)

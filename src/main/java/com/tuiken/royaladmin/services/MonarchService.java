@@ -211,4 +211,10 @@ public class MonarchService {
     public List<MonarchIdStatus> finByManyId(Set<UUID> idsAtLevel) {
         return monarchRepository.findAllByIdIn(idsAtLevel);
     }
+
+    public void reportProcess() {
+        long all = monarchRepository.count();
+        long done = monarchRepository.countByProcess("Done");
+        System.out.printf("Done: %s/%s (%s %%)%n", done, all, 100*((double)done/all));
+    }
 }

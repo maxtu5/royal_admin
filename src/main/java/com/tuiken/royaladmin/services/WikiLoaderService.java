@@ -62,7 +62,7 @@ public class WikiLoaderService {
         if (newReigns.size() == 1) {
             return addReignToThroneAndMonarchAndSave(newReigns.get(0), throne, monarch);
         }
-        if (newReigns.size() == 2
+        if (newReigns.size() >= 2
 //                && reignsOverlap(newReigns.get(0), newReigns.get(1))
         ) {
             newReigns.sort((r1, r2) -> (int) Duration.between(r1.getStart(), r2.getStart()).toMinutes());

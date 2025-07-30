@@ -43,7 +43,10 @@ public enum Country {
     COURLAND(new String[]{"Courland and Semigallia"}),
     BRETAGNE(new String[]{"Brittany"}),
     MONACO(new String[]{"Monaco"}),
-    PARMA(new String[]{"Parma"});
+    PARMA(new String[]{"Parma"}),
+    SERBIA(new String[]{"Yugoslavia", "Serbia"}),
+    HANOVER(new String[]{"Hanover"}),
+    PALATINATE_RHINE(new String[]{"Palatine of the Rhine", "Elector Palatine"});
 
     @Getter
     private final String[] keywords;

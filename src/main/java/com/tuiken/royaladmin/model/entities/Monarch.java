@@ -56,6 +56,8 @@ public class Monarch {
     @Column(length = 1024)
     private String description;
 
+    private String process;
+
     public Monarch(String url) {
         this.url = url;
     }

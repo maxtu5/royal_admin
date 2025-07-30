@@ -60,11 +60,11 @@ public class AiResolverService {
         return response;
     }
 
-    public String findGender(String name) {
+    public String findGender1(String name) {
         return "UNKNOWN";
     }
 
-    public String findGender1(String name) {
+    public String findGender(String name) {
 
         String promtTemplate = """
                         Tell me if %s is male or female.

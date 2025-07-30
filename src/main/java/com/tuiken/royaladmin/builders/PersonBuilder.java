@@ -47,7 +47,7 @@ public class PersonBuilder {
 
         Monarch monarch = new Monarch(url);
         monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
-        monarch.setGender(Gender.fromTitle(monarch.getName()));
+        monarch.setGender(detectGender(monarch));
         monarch.setBirth(RetrieverService.retrieveOneDate(jsonArray, "Born"));
         monarch.setDeath(RetrieverService.retrieveOneDate(jsonArray, "Died"));
         monarch.setHouse(RetrieverService.retrieveHouses(jsonArray));
@@ -55,6 +55,7 @@ public class PersonBuilder {
         monarch.setImageUrl(imageData[0]);
         monarch.setImageCaption(imageData[1]);
         monarch.setStatus(PersonStatus.NEW_URL);
+        if (monarch.getGender()==null && monarch.getBirth()==null && monarch.getDeath()==null) return null;
         System.out.println("== Created person " + monarch.getName());
         return monarch;
     }
@@ -71,15 +72,15 @@ public class PersonBuilder {
                     .filter(Objects::nonNull)
                     .findFirst().orElse(null);
         }
-//        if (retval == null) {
-//            String aiResolved = aiResolverService.findGender(monarch.getName());
-//            try {
-//                retval = Gender.valueOf(aiResolved);
-//            } catch (IllegalArgumentException e) {
-//                System.out.println("UNKNOWN???");
-//            }
-//            System.out.println(monarch.getName() + " defined by AI as " + retval);
-//        }
+        if (retval == null) {
+            String aiResolved = aiResolverService.findGender(monarch.getName());
+            try {
+                retval = Gender.valueOf(aiResolved);
+            } catch (IllegalArgumentException e) {
+                System.out.println("UNKNOWN???");
+            }
+            System.out.println(monarch.getName() + " defined by AI as " + retval);
+        }
         return retval;
     }
 
