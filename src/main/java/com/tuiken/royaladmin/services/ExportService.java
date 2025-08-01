@@ -5,7 +5,6 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import com.tuiken.royaladmin.model.api.output.CsvFullExportDto;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
@@ -41,7 +40,7 @@ public class ExportService {
     private final CsvUploadService csvUploadService;
 
     @Transactional
-    public CsvFullExportDto exportAll() {
+    public void exportAll() {
         List<Throne> thrones = throneRoom.loadAllThrones();
         List<ThroneCsvDto> throneDtos = thrones.stream()
                 .map(this::toThroneCsvDto)
@@ -87,15 +86,6 @@ public class ExportService {
 
         saveToCSV(fatherDtos, TARGET_PATH + FATHERS_FILE);
         saveToCSV(motherDtos, TARGET_PATH + MOTHERS_FILE);
-
-        return CsvFullExportDto.builder()
-                .thronesPath(csvUploadService.uploadToDrive(THRONES_FILE))
-                .fathersPath(csvUploadService.uploadToDrive(FATHERS_FILE))
-                .mothersPath(csvUploadService.uploadToDrive(MOTHERS_FILE))
-                .monarchsPath(csvUploadService.uploadToDrive(MONARCHS_FILE))
-                .reignsPath(csvUploadService.uploadToDrive(REIGNS_FILE))
-                .firstsPath(csvUploadService.uploadToDrive(FIRST_REIGNS_FILE))
-                .build();
     }
 
     private List<ReignCsvDto> buildReignDtos(Throne throne, List<Monarch> monarchs) {

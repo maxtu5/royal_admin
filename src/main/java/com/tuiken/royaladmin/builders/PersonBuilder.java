@@ -30,7 +30,7 @@ public class PersonBuilder {
 
     public Monarch findOrCreate(String url, Gender gender) {
 
-        String resolvedUrl = linkResolver.resolve(url);
+        String resolvedUrl = linkResolver.resolve(url);//лишнее
         System.out.println("Reading from source: " + resolvedUrl);
 
         Monarch monarch = monarchService.findByUrl(resolvedUrl);

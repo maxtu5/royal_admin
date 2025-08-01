@@ -3,7 +3,6 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.ThroneRepository;
-import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.*;
@@ -118,9 +117,10 @@ public class WikiLoaderService {
         return monarchService.toApiDto(monarch);
     }
 
+    @Transactional
     public List<MonarchApiDto> loadRulersFamilyMembers(Country country, int quantity, int depth) {
         List<UUID> idsToLoad = findUnresolvedIds(country, quantity, depth);
-        return idsToLoad.stream().map(this::loadFamilyOne).toList();
+        return idsToLoad.stream().map(this::resolveFamily).toList();
     }
 
     private List<UUID> findUnresolvedIds(Country country, int quantity, int maxDepth) {
@@ -146,7 +146,8 @@ public class WikiLoaderService {
         return retval;
     }
 
-    private MonarchApiDto loadFamilyOne(UUID id) {
+    @Transactional
+    public MonarchApiDto resolveFamily(UUID id) {
         Monarch monarch = monarchService.finById(id);
         System.out.printf("\n+++ Loading family for %s +++%n", monarch.getName());
 

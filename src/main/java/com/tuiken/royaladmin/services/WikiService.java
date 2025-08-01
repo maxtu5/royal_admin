@@ -40,7 +40,7 @@ public class WikiService {
 
         String[] tokens = url.split("/");
         String requestUrl = String.format(ENT_WIKI_STRUCTURED_URL, tokens[tokens.length - 1]);
-        String resolvedUrl = linkResolver.resolve(requestUrl);
+        String resolvedUrl = linkResolver.resolve(requestUrl); //лишнее
 
         // try to find in cache
         WikiCacheRecord cacheRecord = wikiCacheRecordRepository

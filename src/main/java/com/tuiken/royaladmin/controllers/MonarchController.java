@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/data/monarchs")
@@ -87,6 +88,11 @@ public class MonarchController {
             @PathVariable @Min(1) int depth)
     {
         return wikiLoaderService.loadRulersFamilyMembers(country, quantity, depth);
+    }
+
+    @PostMapping(path = "/resolve/{id}")
+    public MonarchApiDto resolveMonarch(@PathVariable String id) {
+        return wikiLoaderService.resolveFamily(UUID.fromString(id));
     }
 
     @GetMapping(path = "/unhandled")
