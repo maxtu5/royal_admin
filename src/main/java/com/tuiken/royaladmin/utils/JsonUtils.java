@@ -1,5 +1,6 @@
 package com.tuiken.royaladmin.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.tuiken.royaladmin.model.enums.Country;
 import org.apache.logging.log4j.util.Strings;
 import org.json.JSONArray;
@@ -174,5 +175,174 @@ public class JsonUtils {
             retval.addAll(JsonUtils.choosePartsByType(items, "image"));
         }
         return retval.isEmpty() ? new JSONObject() : retval.get(0).getJSONArray("images").getJSONObject(0);
+    }
+
+    public static boolean hasInfobox(JSONArray rootArray) {
+        if (rootArray == null || rootArray.isEmpty()) {
+            return false;
+        }
+
+        for (int i = 0; i < rootArray.length(); i++) {
+            JSONObject obj = rootArray.optJSONObject(i);
+            if (obj != null) {
+                // Check for single "infobox" object
+                if (obj.has("infobox")) {
+                    return true;
+                }
+
+                // Check for "infoboxes" array or object
+                Object infoboxesObj = obj.opt("infoboxes");
+                if (infoboxesObj instanceof JSONArray) {
+                    JSONArray infoboxes = (JSONArray) infoboxesObj;
+                    if (infoboxes.length() > 0) {
+                        return true;
+                    }
+                } else if (infoboxesObj != null) {
+                    // If it's not a JSONArray but still exists, treat it as a hit
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    public static String extractWikiName(JSONArray rootArray) {
+        if (rootArray == null || rootArray.length() == 0) {
+            return "";
+        }
+
+        JSONObject root = rootArray.optJSONObject(0);
+        if (root == null) {
+            return "";
+        }
+
+        String name = root.optString("name");
+        return name != null ? name.trim() : "";
+    }
+
+    public static List<String> extractWikiText(JSONArray rootArray) {
+        List<String> paragraphs = new ArrayList<>();
+
+        if (rootArray == null || rootArray.length() == 0) {
+            return paragraphs;
+        }
+
+        JSONObject root = rootArray.optJSONObject(0);
+        if (root == null) {
+            return paragraphs;
+        }
+
+        JSONArray sections = root.optJSONArray("sections");
+        if (sections == null) {
+            return paragraphs;
+        }
+
+        for (int i = 0; i < sections.length(); i++) {
+            JSONObject section = sections.optJSONObject(i);
+            if (section == null) continue;
+
+            JSONArray hasParts = section.optJSONArray("has_parts");
+            if (hasParts == null) continue;
+
+            for (int j = 0; j < hasParts.length(); j++) {
+                JSONObject part = hasParts.optJSONObject(j);
+                if (part == null) continue;
+
+                if ("paragraph".equals(part.optString("type"))) {
+                    String value = part.optString("value");
+                    if (!value.isEmpty()) {
+                        paragraphs.add(value);
+                    }
+                }
+            }
+        }
+
+        return paragraphs;
+    }
+
+    public static String composeShortText(List<String> paragraphs, int maxLength) {
+        StringBuilder result = new StringBuilder();
+        int currentLength = 0;
+
+        for (String paragraph : paragraphs) {
+            if (currentLength + paragraph.length() > maxLength) {
+                break;
+            }
+
+            result.append(paragraph).append("\n");
+            currentLength = result.length();
+        }
+
+        return result.toString().trim(); // Remove trailing newline
+    }
+
+    public static Set<String> extractWikiLinks(JSONArray rootArray) {
+        Set<String> wikiUrls = new HashSet<>();
+
+        if (rootArray == null || rootArray.length() == 0) {
+            return wikiUrls;
+        }
+
+        JSONObject root = rootArray.optJSONObject(0);
+        if (root == null) {
+            return wikiUrls;
+        }
+
+        // Top-level URL
+        String topUrl = root.optString("url");
+        if (topUrl.contains("wikipedia.org")) {
+            wikiUrls.add(topUrl);
+        }
+
+        // Scan infoboxes
+        scanForWikiLinks(root.optJSONArray("infoboxes"), wikiUrls);
+
+        // Optionally scan sections
+        scanForWikiLinks(root.optJSONArray("sections"), wikiUrls);
+
+        return wikiUrls;
+    }
+
+    private static void scanForWikiLinks(JSONArray array, Set<String> wikiUrls) {
+        if (array == null) return;
+
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject item = array.optJSONObject(i);
+            if (item == null) continue;
+
+            JSONArray hasParts = item.optJSONArray("has_parts");
+            scanPartsRecursively(hasParts, wikiUrls);
+        }
+    }
+
+    private static void scanPartsRecursively(JSONArray parts, Set<String> wikiUrls) {
+        if (parts == null) return;
+
+        for (int i = 0; i < parts.length(); i++) {
+            JSONObject part = parts.optJSONObject(i);
+            if (part == null) continue;
+
+            // Extract links
+            JSONArray links = part.optJSONArray("links");
+            if (links != null) {
+                for (int j = 0; j < links.length(); j++) {
+                    JSONObject link = links.optJSONObject(j);
+                    if (link == null) continue;
+
+                    String url = link.optString("url");
+                    if (url != null && !url.isEmpty()) {
+                        if (url.contains("wikipedia.org")) {
+                            wikiUrls.add(url);
+                        } else if (!url.startsWith("http")) {
+                            // Assume it's a relative Wikipedia link
+                            wikiUrls.add("https://en.wikipedia.org/wiki/" + url);
+                        }
+                    }
+                }
+            }
+
+            // Recurse into nested has_parts
+            scanPartsRecursively(part.optJSONArray("has_parts"), wikiUrls);
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.tuiken.royaladmin.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -9,14 +10,19 @@ import java.util.List;
 @Service
 public class LinkResolver {
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     private static final String REDIRECT_URL = "https://en.wikipedia.org/w/api.php?action=query&format=json&titles=%s&redirects=1&formatversion=2";
 
     public String resolve(String url) {
+        System.out.println("Resolving " + url);
         String decodedUrl = URLDecoder.decode(url);
-        RestTemplate restTemplate = new RestTemplate();
+
         String title = extractTitle(decodedUrl);
         String redirectUrl = String.format(REDIRECT_URL, title);
         RedirectsResponse response = restTemplate.getForObject(redirectUrl, RedirectsResponse.class);
+
         String newTitle = normalize(response.query.pages.get(0).title);
         if (newTitle.equals(title)) {
             return decodedUrl;

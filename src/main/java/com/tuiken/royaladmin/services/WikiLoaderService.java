@@ -3,6 +3,7 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.ThroneRepository;
+import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.*;
@@ -117,10 +118,9 @@ public class WikiLoaderService {
         return monarchService.toApiDto(monarch);
     }
 
-    @Transactional
     public List<MonarchApiDto> loadRulersFamilyMembers(Country country, int quantity, int depth) {
         List<UUID> idsToLoad = findUnresolvedIds(country, quantity, depth);
-        return idsToLoad.stream().map(this::resolveFamily).toList();
+        return idsToLoad.stream().flatMap(id -> loadFamilyOne(id).stream()).toList();
     }
 
     private List<UUID> findUnresolvedIds(Country country, int quantity, int maxDepth) {
@@ -147,8 +147,21 @@ public class WikiLoaderService {
     }
 
     @Transactional
-    public MonarchApiDto resolveFamily(UUID id) {
+    public List<MonarchApiDto> loadFamilyOne(UUID id) {
         Monarch monarch = monarchService.finById(id);
+        if (monarch == null) return new ArrayList<>();
+        return switch (monarch.getStatus()) {
+            case NEW_URL -> loadFamilyApi(monarch);
+            case NEW_WEB -> loadFamilyWeb(monarch);
+            default -> new ArrayList<>();
+        };
+    }
+
+    private List<MonarchApiDto> loadFamilyWeb(Monarch monarch) {
+        return new ArrayList<>();
+    }
+
+    private List<MonarchApiDto> loadFamilyApi(Monarch monarch) {
         System.out.printf("\n+++ Loading family for %s +++%n", monarch.getName());
 
         Monarch unmanaged = new Monarch(monarch.getUrl());
@@ -160,7 +173,7 @@ public class WikiLoaderService {
 
         LoadFamilyConfiguration configuration = retrieverService.createLoadFamilyConfiguration(unmanaged);
         configuration.print();
-        retrieverService.saveLoaded(configuration);
+        List<Monarch> newMonarchs = retrieverService.saveLoaded(configuration);
 
         monarch.setStatus(PersonStatus.RESOLVED);
         monarchService.save(monarch);
@@ -168,6 +181,9 @@ public class WikiLoaderService {
         MonarchApiDto retval = monarchService.toApiDto(monarch);
         Provenence provenence = provenanceService.findById(monarch.getId());
         retval.setFamily(provenanceService.toFamilyDto(monarch, provenence));
-        return retval;
+        List<MonarchApiDto> monarchApiDtos = new ArrayList<>();
+        monarchApiDtos.add(retval);
+        monarchApiDtos.addAll(newMonarchs.stream().filter(m->!m.getStatus().equals(PersonStatus.RESOLVED)).map(monarchService::toApiDto).toList());
+        return monarchApiDtos;
     }
 }

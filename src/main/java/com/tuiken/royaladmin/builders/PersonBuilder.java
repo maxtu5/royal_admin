@@ -27,24 +27,49 @@ public class PersonBuilder {
     private final MonarchService monarchService;
     private final ReignRepository reignRepository;
     private final AiResolverService aiResolverService;
+    private final WikiDirectService wikiDirectService;
 
     public Monarch findOrCreate(String url, Gender gender) {
 
-        String resolvedUrl = linkResolver.resolve(url);//лишнее
+        String resolvedUrl = linkResolver.resolve(url);
         System.out.println("Reading from source: " + resolvedUrl);
 
         Monarch monarch = monarchService.findByUrl(resolvedUrl);
         if (monarch != null) System.out.println("== Exists");
-        monarch = monarch == null ? buildPerson(url) : monarch;
-        if (monarch == null) System.out.println("== FAILED to create attempt failed");
-        if (monarch != null && monarch.getGender() == null) monarch.setGender(gender);
+        monarch = monarch == null ? buildPerson(resolvedUrl) : monarch;
+//        if (monarch == null) monarch = wikiDirectService.parse(resolvedUrl);
+
+        if (monarch == null)
+            System.out.println("== FAILED to create attempt failed");
+        if (monarch != null && monarch.getGender() == null) monarch.setGender(gender==null? detectGender(monarch) : gender);
         return monarch;
     }
 
     public Monarch buildPerson(String url) {
         JSONArray jsonArray = wikiService.read(url);
-        if (jsonArray == null || JsonUtils.readInfoboxes(jsonArray).size() == 0) return null;
+        if (jsonArray == null) return null;
+        if (!JsonUtils.hasInfobox(jsonArray)) {
+            return buildPersonFromAI(url, jsonArray);
+        }
+        return buildPersonFromInfobox(url, jsonArray);
+    }
 
+    private Monarch buildPersonFromAI(String url, JSONArray originalArray) {
+//        JSONArray cachedArray = wikiService.readIfInCache(url);
+//        if (cachedArray == null) return null;
+//
+//        List<String> paragraphs = JsonUtils.extractWikiText(cachedArray);
+
+//        JsonUtils.extractWikiLinks(originalArray);
+
+        Monarch generated = aiResolverService.fullyGenerate(url, PersonStatus.NEW_AI);
+        if (generated == null) return null;
+
+        System.out.println("== Created person with AI: " + generated.getName());
+        return generated;
+    }
+
+    private Monarch buildPersonFromInfobox(String url, JSONArray jsonArray) {
         Monarch monarch = new Monarch(url);
         monarch.setName(RetrieverService.retrieveProperty(jsonArray, "name"));
         monarch.setGender(detectGender(monarch));
@@ -55,8 +80,10 @@ public class PersonBuilder {
         monarch.setImageUrl(imageData[0]);
         monarch.setImageCaption(imageData[1]);
         monarch.setStatus(PersonStatus.NEW_URL);
-        if (monarch.getGender()==null && monarch.getBirth()==null && monarch.getDeath()==null) return null;
-        System.out.println("== Created person " + monarch.getName());
+        if (monarch.getGender() == null && monarch.getBirth() == null && monarch.getDeath() == null) {
+            return null;
+        }
+        System.out.println("== Created person: " + monarch.getName());
         return monarch;
     }
 

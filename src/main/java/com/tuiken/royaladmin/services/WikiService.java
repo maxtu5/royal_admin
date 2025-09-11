@@ -1,17 +1,25 @@
 package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
+import com.tuiken.royaladmin.exceptions.NotPersonWikiApiException;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.cache.WikiCacheRecord;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +29,9 @@ public class WikiService {
     private final TokenManager tokenManager;
     private final LinkResolver linkResolver;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private final RestTemplate restTemplate;
 
-    private static final String ENT_WIKI_STRUCTURED_URL = "https://api.enterprise.wikimedia.com/v2/structured-contents/%s";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";
     private static final String REQUEST_URL_PREFIX = "https://api.enterprise.wikimedia.com/v2/structured-contents/";
 
@@ -39,20 +47,20 @@ public class WikiService {
     public JSONArray read(String url) {
 
         String[] tokens = url.split("/");
-        String requestUrl = String.format(ENT_WIKI_STRUCTURED_URL, tokens[tokens.length - 1]);
-        String resolvedUrl = linkResolver.resolve(requestUrl); //лишнее
+        String requestUrl = REQUEST_URL_PREFIX + tokens[tokens.length - 1];
+        //linkResolver.resolve(requestUrl);
 
         // try to find in cache
         WikiCacheRecord cacheRecord = wikiCacheRecordRepository
-                .findByUrl(resolvedUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX))
-                .orElse(new WikiCacheRecord(resolvedUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX)));
+                .findByUrl(requestUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX))
+                .orElse(new WikiCacheRecord(requestUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX)));
         if (cacheRecord.getCacheId() != null) {
             return new JSONArray(cacheRecord.getBody());
         }
         // not found in cache, retrieve from wiki API
         String rawResponse = null;
         try {
-            rawResponse = loadFromWikiApi(resolvedUrl);
+            rawResponse = loadFromWikiApi(requestUrl);
         } catch (WikiApiException e) {
             System.out.println("WikiApiException: " + e.getMessage());
             return null;
@@ -63,6 +71,58 @@ public class WikiService {
         cacheRecord.setBody(rawResponse);
         wikiCacheRecordRepository.save(cacheRecord);
         return retval;
+    }
+
+    @Transactional
+    public JSONArray read(String url, boolean resolve) throws NotPersonWikiApiException {
+        String title = extractTitleFromUrl(url);
+        String requestUrl = REQUEST_URL_PREFIX + title;
+
+        String resolvedUrl = resolve ? linkResolver.resolve(requestUrl) : requestUrl;
+        String normalizedUrl = resolvedUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX);
+
+        WikiCacheRecord cacheRecord = wikiCacheRecordRepository
+                .findByUrl(normalizedUrl)
+                .orElse(new WikiCacheRecord(normalizedUrl));
+
+        if (cacheRecord.getCacheId() != null) {
+            try {
+
+                JSONArray retval = new JSONArray(cacheRecord.getBody());
+                if (retval.getJSONObject(0).has("error") && retval.getJSONObject(0).getString("error").equals("not a person"))
+                    throw new NotPersonWikiApiException("not person");
+            } catch (JSONException e) {
+                System.err.println("Invalid cached JSON for URL: " + normalizedUrl);
+            }
+        }
+
+        String rawResponse;
+        try {
+            rawResponse = loadFromWikiApi(resolvedUrl);
+        } catch (WikiApiException e) {
+            System.err.println("WikiApiException: " + e.getMessage());
+            return null;
+        }
+
+        if (rawResponse == null || rawResponse.isBlank()) return null;
+
+        JSONArray result;
+        try {
+            result = new JSONArray(rawResponse);
+        } catch (JSONException e) {
+            System.err.println("Failed to parse Wiki API response for URL: " + resolvedUrl);
+            return null;
+        }
+
+        cacheRecord.setBody(rawResponse);
+        wikiCacheRecordRepository.save(cacheRecord);
+
+        return result;
+    }
+
+    private String extractTitleFromUrl(String url) {
+        String[] tokens = url.split("/");
+        return tokens.length > 0 ? tokens[tokens.length - 1] : "";
     }
 
     private String loadFromWikiApi(String url) throws WikiApiException {
@@ -103,4 +163,45 @@ public class WikiService {
         }
     }
 
+    public JSONArray readIfInCache(String url) {
+        return wikiCacheRecordRepository.findByUrl(url)
+                .map(record -> {
+                    String body = record.getBody();
+                    try {
+                        return new JSONArray(body);
+                    } catch (JSONException e) {
+                        throw new RuntimeException("Invalid JSON in cache for URL: " + url, e);
+                    }
+                })
+                .orElse(null);
+    }
+
+    public String findMainImage(String url) {
+        try {
+            String title = url.substring(url.lastIndexOf("/") + 1);
+            String apiUrl = "https://en.wikipedia.org/w/api.php?action=query&titles=" +
+                    title + "&prop=pageimages&format=json&pithumbsize=2500";
+
+            ResponseEntity<String> response = restTemplate.getForEntity(apiUrl, String.class);
+
+            // Parse JSON response
+            JSONObject json = new JSONObject(response.getBody());
+            JSONObject pages = json.getJSONObject("query").getJSONObject("pages");
+
+            for (String key : pages.keySet()) {
+                JSONObject page = pages.getJSONObject(key);
+                if (page.has("thumbnail")) {
+                    System.out.println(page.getJSONObject("thumbnail").getString("source"));
+                    return page.getJSONObject("thumbnail").getString("source");
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // No image found
+        return null;
+
+    }
 }

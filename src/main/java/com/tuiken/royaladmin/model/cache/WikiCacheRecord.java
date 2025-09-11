@@ -23,6 +23,8 @@ public class WikiCacheRecord {
     String url;
     @Column(columnDefinition = "longtext")
     String body;
+    @Column(columnDefinition = "varchar(10)")
+    UUID status;
 
     public WikiCacheRecord(String url) {
         this.url = url;

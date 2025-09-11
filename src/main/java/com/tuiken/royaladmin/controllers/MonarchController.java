@@ -91,8 +91,8 @@ public class MonarchController {
     }
 
     @PostMapping(path = "/resolve/{id}")
-    public MonarchApiDto resolveMonarch(@PathVariable String id) {
-        return wikiLoaderService.resolveFamily(UUID.fromString(id));
+    public List<MonarchApiDto> resolveMonarch(@PathVariable String id) {
+        return wikiLoaderService.loadFamilyOne(UUID.fromString(id));
     }
 
     @GetMapping(path = "/unhandled")

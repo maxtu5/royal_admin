@@ -32,4 +32,7 @@ public class MonarchApiDto {
     private PersonStatus status;
     private List<ReignDto> reigns;
     private FamilyDto family;
+    private String description;
+    private String imageUrl;
+    private String imageCaption;
 }

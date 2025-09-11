@@ -131,6 +131,9 @@ public class MonarchService {
                     .url(monarch.getUrl())
                     .gender(monarch.getGender())
                     .house(monarch.getHouse())
+                    .description(monarch.getDescription())
+                    .imageUrl(monarch.getImageUrl())
+                    .imageCaption(monarch.getImageCaption())
                     .birth(monarch.getBirth() == null ? null : monarch.getBirth().atZone(ZoneId.systemDefault()).toLocalDate())
                     .death(monarch.getDeath() == null ? null : monarch.getDeath().atZone(ZoneId.systemDefault()).toLocalDate())
                     .status(monarch.getStatus())
@@ -199,7 +202,7 @@ public class MonarchService {
         if (Strings.isNotBlank(monarch.getDescription())) {
             return monarch.getDescription();
         } else {
-            String desc = aiResolverService.createDescription(monarch.getName());
+            String desc = aiResolverService.createDescription(monarch.getName()+(monarch.getBirth()==null?"":". he was born in "+monarch.getBirth().atZone(ZoneId.systemDefault()).toLocalDate().getYear()));
             System.out.println(desc);
             System.out.println(desc.length());
             monarch.setDescription(desc);

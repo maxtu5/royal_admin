@@ -21,4 +21,6 @@ public interface MonarchRepository extends CrudRepository<Monarch, UUID> {
     long countByStatus(PersonStatus status);
 
     long countByProcess(String done);
+
+    boolean existsByUrl(String link);
 }

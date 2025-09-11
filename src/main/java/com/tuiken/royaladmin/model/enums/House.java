@@ -472,7 +472,8 @@ public enum House {
     BRANDON("Brandon"),
     DELA_FLECHE_DE_BAUGENCY("de La Flèche-de Baugency"),
     POTOCKI("Potocki"),
-    OBRENOVIC("Obrenović");
+    OBRENOVIC("Obrenović"),
+    SAPIEHA("Sapieha");
 
     private static final String UNSAVED_HOUSES_FILE = "C:\\Users\\MT\\IdeaProjects\\royal_admin\\data\\houses.txt";
     private final String label;

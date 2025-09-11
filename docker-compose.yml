@@ -1,0 +1,13 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_DBNAME: ${DB_DBNAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    volumes:
+      - ./data/config:/app/conf
+    entrypoint: ["java", "-Dspring.profiles.active=qal", "-jar", "architect.jar"]

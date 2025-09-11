@@ -8,6 +8,7 @@ import com.tuiken.royaladmin.model.entities.Reign;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.House;
+import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
 import com.tuiken.royaladmin.utils.DatesParser;
 import com.tuiken.royaladmin.utils.JsonUtils;
@@ -136,21 +137,20 @@ public class RetrieverService {
 
         List<Monarch> retval = issueUrls.isEmpty() ? smartIssueSearchService.findInAllLinksParentCheck(issue, root, allLinks) :
                 issueUrls.stream()
-                        .map(resolver::resolve)
                         .map(url -> personBuilder.findOrCreate(url, null))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
         return retval;
     }
 
-    public void saveLoaded(LoadFamilyConfiguration configuration) {
+    public List<Monarch> saveLoaded(LoadFamilyConfiguration configuration) {
         System.out.println("=== SAVING ===");
         int savedRels = 0;
         int savedMonarchs = 0;
-
+        List<Monarch> newMonarchs = new ArrayList<>();
         if (configuration.getRootId() == null || configuration.getRootUrl() == null ||
                 !configuration.getIssue().isEmpty() && configuration.getRootGender() == null)
-            return;
+            return newMonarchs;
 
         // parents
         Provenence provenence = new Provenence(configuration.getRootId());
@@ -160,13 +160,23 @@ public class RetrieverService {
                     monarchService.save(configuration.getFather()) :
                     configuration.getFather();
             provenence.setFather(father.getId());
+            if (!father.getStatus().equals(PersonStatus.RESOLVED)) newMonarchs.add(father);
+            if (father.getStatus().equals(PersonStatus.EPHEMERAL)) {
+                father.setStatus(PersonStatus.NEW_AI);
+                monarchService.save(father);
+            }
         }
         if (configuration.getMotherId() == null && configuration.getMother() != null) {
             savedMonarchs += configuration.getMother().getId() == null ? 1 : 0;
             Monarch mother = configuration.getMother().getId() == null ?
                     monarchService.save(configuration.getMother()) :
                     configuration.getMother();
+            if (!mother.getStatus().equals(PersonStatus.RESOLVED)) newMonarchs.add(mother);
             provenence.setMother(mother.getId());
+            if (mother.getStatus().equals(PersonStatus.EPHEMERAL)) {
+                mother.setStatus(PersonStatus.NEW_AI);
+                monarchService.save(mother);
+            }
         }
         if (provenence.getFather() != null || provenence.getMother() != null) {
             provenanceService.saveOrMerge(provenence);
@@ -178,22 +188,28 @@ public class RetrieverService {
                 configuration.getIssueIds() != null && configuration.getIssueIds().size() >= configuration.getIssue().size()) {
             System.out.println("Monarchs:  " + savedMonarchs);
             System.out.println("Relations: " + savedRels);
-            return;
+            return newMonarchs;
         }
 
         savedMonarchs += (int) configuration.getIssue().stream().filter(m -> m.getId() == null).count();
-        savedRels += configuration.getIssue().stream().mapToInt(monarch -> {
-            Monarch child = monarch.getId() == null ? monarchService.save(monarch) : monarch;
-            if (!configuration.getIssueIds().contains(child.getId())) {
+        savedRels += configuration.getIssue().stream().mapToInt(child -> {
+            Monarch savedChild = child.getId() == null ? monarchService.save(child) : child;
+            if (savedChild.getStatus().equals(PersonStatus.EPHEMERAL)) {
+                savedChild.setStatus(PersonStatus.NEW_AI);
+                monarchService.save(savedChild);
+            }
+            if (!configuration.getIssueIds().contains(savedChild.getId())) {
                 Provenence provenenceChild = configuration.getRootGender() == Gender.MALE ?
-                        Provenence.builder().id(child.getId()).father(configuration.getRootId()).build() :
-                        Provenence.builder().id(child.getId()).mother(configuration.getRootId()).build();
+                        Provenence.builder().id(savedChild.getId()).father(configuration.getRootId()).build() :
+                        Provenence.builder().id(savedChild.getId()).mother(configuration.getRootId()).build();
                 provenanceService.save(provenenceChild);
+                if (!savedChild.getStatus().equals(PersonStatus.RESOLVED)) newMonarchs.add(savedChild);
                 return 1;
             } else return 0;
         }).sum();
         System.out.println("Monarchs:  " + savedMonarchs);
         System.out.println("Relations: " + savedRels);
+        return newMonarchs;
     }
 
 // +++++++ +++++++++++
