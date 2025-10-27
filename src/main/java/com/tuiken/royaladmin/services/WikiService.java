@@ -46,18 +46,16 @@ public class WikiService {
     @Transactional
     public JSONArray read(String url) {
 
-        String[] tokens = url.split("/");
-        String requestUrl = REQUEST_URL_PREFIX + tokens[tokens.length - 1];
-        //linkResolver.resolve(requestUrl);
-
         // try to find in cache
         WikiCacheRecord cacheRecord = wikiCacheRecordRepository
-                .findByUrl(requestUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX))
-                .orElse(new WikiCacheRecord(requestUrl.replace(REQUEST_URL_PREFIX, NORMAL_URL_PREFIX)));
+                .findByUrl(url)
+                .orElse(new WikiCacheRecord(url));
         if (cacheRecord.getCacheId() != null) {
             return new JSONArray(cacheRecord.getBody());
         }
         // not found in cache, retrieve from wiki API
+        String[] tokens = url.split("/");
+        String requestUrl = REQUEST_URL_PREFIX + tokens[tokens.length - 1];
         String rawResponse = null;
         try {
             rawResponse = loadFromWikiApi(requestUrl);

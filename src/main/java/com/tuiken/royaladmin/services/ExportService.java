@@ -38,7 +38,6 @@ public class ExportService {
     private final MonarchService monarchService;
     private final ThroneService throneRoom;
     private final ProvenanceService provenanceService;
-    private final CsvUploadService csvUploadService;
 
     @Transactional
     public CsvFullExportDto exportAll() {
@@ -88,14 +87,7 @@ public class ExportService {
         saveToCSV(fatherDtos, TARGET_PATH + FATHERS_FILE);
         saveToCSV(motherDtos, TARGET_PATH + MOTHERS_FILE);
 
-        return CsvFullExportDto.builder()
-                .thronesPath(csvUploadService.uploadToDrive(THRONES_FILE))
-                .fathersPath(csvUploadService.uploadToDrive(FATHERS_FILE))
-                .mothersPath(csvUploadService.uploadToDrive(MOTHERS_FILE))
-                .monarchsPath(csvUploadService.uploadToDrive(MONARCHS_FILE))
-                .reignsPath(csvUploadService.uploadToDrive(REIGNS_FILE))
-                .firstsPath(csvUploadService.uploadToDrive(FIRST_REIGNS_FILE))
-                .build();
+        return null;
     }
 
     private List<ReignCsvDto> buildReignDtos(Throne throne, List<Monarch> monarchs) {

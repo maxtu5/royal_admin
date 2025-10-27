@@ -39,7 +39,7 @@ public class UnhandledRecordService {
     private final MonarchService monarchService;
     private final PersonBuilder personBuilder;
     private final ProvenenceRepository provenenceRepository;
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
 
     private final RestTemplate restTemplate = new RestTemplate();
 

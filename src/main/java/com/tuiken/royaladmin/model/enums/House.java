@@ -473,7 +473,13 @@ public enum House {
     DELA_FLECHE_DE_BAUGENCY("de La Flèche-de Baugency"),
     POTOCKI("Potocki"),
     OBRENOVIC("Obrenović"),
-    SAPIEHA("Sapieha");
+    SAPIEHA("Sapieha"),
+    UI_IMAIR("Uí Ímair"),
+    CLAN_DOUGLAS("Clan Douglas"),
+    ANGUS("Angus"),
+    BLACK_DOUGLAS("Black Douglas");
+
+            ;
 
     private static final String UNSAVED_HOUSES_FILE = "C:\\Users\\MT\\IdeaProjects\\royal_admin\\data\\houses.txt";
     private final String label;

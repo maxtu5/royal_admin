@@ -1,7 +1,6 @@
 package com.tuiken.royaladmin.builders;
 
 import com.tuiken.royaladmin.datalayer.ReignRepository;
-import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Reign;
@@ -26,7 +25,8 @@ public class PersonBuilder {
     private final WikiService wikiService;
     private final MonarchService monarchService;
     private final ReignRepository reignRepository;
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
+    private final AiService aiService;
     private final WikiDirectService wikiDirectService;
 
     public Monarch findOrCreate(String url, Gender gender) {
@@ -47,25 +47,17 @@ public class PersonBuilder {
 
     public Monarch buildPerson(String url) {
         JSONArray jsonArray = wikiService.read(url);
-        if (jsonArray == null) return null;
-        if (!JsonUtils.hasInfobox(jsonArray)) {
-            return buildPersonFromAI(url, jsonArray);
-        }
-        return buildPersonFromInfobox(url, jsonArray);
+        return (jsonArray == null) ? null : buildPerson(url, jsonArray);
     }
 
-    private Monarch buildPersonFromAI(String url, JSONArray originalArray) {
-//        JSONArray cachedArray = wikiService.readIfInCache(url);
-//        if (cachedArray == null) return null;
-//
-//        List<String> paragraphs = JsonUtils.extractWikiText(cachedArray);
+    public Monarch buildPerson(String url, JSONArray source) {
+        return JsonUtils.hasInfobox(source) ? buildPersonFromInfobox(url, source) : buildPersonFromAI(url, source);
+    }
 
-//        JsonUtils.extractWikiLinks(originalArray);
-
-        Monarch generated = aiResolverService.fullyGenerate(url, PersonStatus.NEW_AI);
-        if (generated == null) return null;
-
-        System.out.println("== Created person with AI: " + generated.getName());
+    public Monarch buildPersonFromAI(String url, JSONArray source) {
+        String searchText = JsonUtils.composeShortText(JsonUtils.extractWikiText(source), 3000);
+        Monarch generated = aiService.generateMonarch(url, searchText);
+        System.out.println(generated == null ? "Failed to generate" : "== Created person with AI: " + generated.getName());
         return generated;
     }
 
@@ -100,7 +92,7 @@ public class PersonBuilder {
                     .findFirst().orElse(null);
         }
         if (retval == null) {
-            String aiResolved = aiResolverService.findGender(monarch.getName());
+            String aiResolved = aiService.findGender(monarch.getName());
             try {
                 retval = Gender.valueOf(aiResolved);
             } catch (IllegalArgumentException e) {

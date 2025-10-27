@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,7 +141,17 @@ public class RetrieverService {
                         .map(url -> personBuilder.findOrCreate(url, null))
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
-        return retval;
+
+        return retval.stream()
+                .collect(Collectors.toMap(
+                        Monarch::getUrl,       // key: url
+                        Function.identity(),   // value: Monarch object
+                        (existing, replacement) -> existing, // keep first occurrence
+                        LinkedHashMap::new     // preserve order
+                ))
+                .values()
+                .stream()
+                .collect(Collectors.toList());
     }
 
     public List<Monarch> saveLoaded(LoadFamilyConfiguration configuration) {

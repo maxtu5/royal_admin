@@ -1,14 +1,11 @@
 package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.builders.PersonBuilder;
-import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.workflows.UnhandledRecord;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +18,7 @@ public class SmartIssueSearchService {
     private static final String WIKI_URL_TEMPLATE = "https://en.wikipedia.org%s";
     private final PersonBuilder personBuilder;
     private final MonarchService monarchService;
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
     private final LinkResolver resolver;
     private final WikiService wikiService;
     private final UnhandledRecordService unhandledRecordService;
@@ -39,6 +36,7 @@ public class SmartIssueSearchService {
                 .map(name -> {
                     String url = findInAllLinks(name, allLinks);
                     if (Strings.isBlank(url)) saveUnhandledRecord(name, url, root.getUrl());
+                    url = (url != null && url.contains("#")) ? url.substring(0, url.indexOf("#")) : url;
                     return url;
                 })
                 .filter(Strings::isNotBlank)

@@ -13,12 +13,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class WikiDirectService {
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
 
 
     public Map<String, List<String>> allLinks(String url) {

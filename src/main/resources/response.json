@@ -1,53 +1,52 @@
 [
   {
-    "name": "Prince Oscar, Duke of Skåne",
-    "identifier": 49629784,
-    "abstract": "Prince Oscar of Sweden, Duke of Skåne is the younger child and only son of Crown Princess Victoria and her husband, Prince Daniel. He is a grandson of King Carl XVI Gustaf and Queen Silvia and is third in the line of succession to the Swedish throne, after his mother and his sister, Princess Estelle.",
+    "name": "David II, Catholicos-Patriarch of Georgia",
+    "identifier": 37943434,
+    "abstract": "David II was a 15th-century Catholicos-Patriarch of Georgia consecrated in 1426.",
     "version": {
-      "identifier": 1263559423,
-      "comment": "Already shown lower down. Consensus is against shoaing coats of arms in infoboxes.",
+      "identifier": 1293832610,
+      "comment": "Short description",
       "tags": [
-        "mw-rollback"
+        "wikieditor"
       ],
-      "is_minor_edit": true,
       "scores": {
         "revertrisk": {
+          "prediction": true,
           "probability": {
-            "false": 0.606922835111618,
-            "true": 0.39307716488838196
+            "false": 0.35030484199523926,
+            "true": 0.6496951580047607
           }
+        },
+        "referencerisk": {
+          "reference_risk_score": 0
+        },
+        "referenceneed": {
+          "reference_need_score": 0.4
         }
       },
       "editor": {
-        "identifier": 28078513,
-        "name": "Celia Homeford",
-        "edit_count": 23494,
+        "identifier": 49785388,
+        "name": "AardvarkScholar",
+        "edit_count": 1,
         "groups": [
-          "extendedconfirmed",
-          "extendedmover",
-          "patroller",
-          "reviewer",
-          "rollbacker",
           "*",
-          "user",
-          "autoconfirmed"
+          "user"
         ],
-        "is_patroller": true,
-        "date_started": "2016-04-13T12:31:11Z"
+        "date_started": "2025-06-03T23:07:58Z"
       },
-      "number_of_characters": 7464,
+      "number_of_characters": 3976,
       "size": {
-        "value": 7484,
+        "value": 4018,
         "unit_text": "B"
       },
       "maintenance_tags": {}
     },
-    "url": "https://en.wikipedia.org/wiki/Prince_Oscar,_Duke_of_Sk%C3%A5ne",
-    "date_created": "2016-03-03T09:32:18Z",
-    "date_modified": "2024-12-17T09:37:28Z",
+    "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia",
+    "date_created": "2012-12-16T07:02:56Z",
+    "date_modified": "2025-06-03T23:15:44Z",
     "main_entity": {
-      "identifier": "Q22997937",
-      "url": "https://www.wikidata.org/entity/Q22997937"
+      "identifier": "Q1106450",
+      "url": "https://www.wikidata.org/entity/Q1106450"
     },
     "is_part_of": {
       "identifier": "enwiki",
@@ -55,31 +54,18 @@
     },
     "additional_entities": [
       {
-        "identifier": "Q22997937",
-        "url": "https://www.wikidata.org/entity/Q22997937",
+        "identifier": "Q1106450",
+        "url": "https://www.wikidata.org/entity/Q1106450",
         "aspects": [
           "C",
           "D.en",
-          "O",
           "S",
           "T"
-        ]
-      },
-      {
-        "identifier": "Q5",
-        "url": "https://www.wikidata.org/entity/Q5",
-        "aspects": [
-          "O"
         ]
       }
     ],
     "in_language": {
       "identifier": "en"
-    },
-    "image": {
-      "content_url": "https://upload.wikimedia.org/wikipedia/commons/0/08/Prince_Oscar%2C_Duke_of_Sk%C3%A5ne_2023.jpg",
-      "width": 809,
-      "height": 1133
     },
     "license": [
       {
@@ -88,133 +74,28 @@
         "url": "https://creativecommons.org/licenses/by-sa/4.0/"
       }
     ],
-    "description": "Swedish prince (born 2016)",
-    "infobox": [
+    "description": "Catholicos-Patriarch of Georgia",
+    "infoboxes": [
       {
-        "name": "Infobox royalty",
+        "name": "Infobox Christian leader",
         "type": "infobox",
         "has_parts": [
           {
-            "name": "Prince Oscar",
+            "name": "David II",
             "type": "section"
           },
           {
-            "name": "Duke of Skåne",
-            "type": "section",
-            "has_parts": [
-              {
-                "type": "image",
-                "value": "Prince Oscar in 2023",
-                "values": [
-                  ""
-                ],
-                "images": [
-                  {
-                    "content_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Prince_Oscar%2C_Duke_of_Sk%C3%A5ne_2023.jpg/220px-Prince_Oscar%2C_Duke_of_Sk%C3%A5ne_2023.jpg",
-                    "caption": "Prince Oscar in 2023",
-                    "height": 220,
-                    "width": 220
-                  }
-                ]
-              },
-              {
-                "name": "Born",
-                "type": "field",
-                "value": "2 March 2016 Karolinska University Hospital, Solna, Sweden",
-                "values": [
-                  ""
-                ],
-                "links": [
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Karolinska_University_Hospital",
-                    "text": "Karolinska University Hospital"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Solna_Municipality",
-                    "text": "Solna"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "Names",
+            "name": "The Catholicos-Patriarch of All Georgia",
             "type": "section"
           },
           {
-            "name": "Names",
+            "name": "Orders",
             "type": "section",
             "has_parts": [
               {
+                "name": "Consecration",
                 "type": "field",
-                "value": "Oscar Carl Olof",
-                "values": [
-                  ""
-                ]
-              },
-              {
-                "name": "House",
-                "type": "field",
-                "value": "Bernadotte",
-                "values": [
-                  ""
-                ],
-                "links": [
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Dynasty",
-                    "text": "House"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/House_of_Bernadotte",
-                    "text": "Bernadotte"
-                  }
-                ]
-              },
-              {
-                "name": "Father",
-                "type": "field",
-                "value": "Prince Daniel, Duke of Västergötland",
-                "values": [
-                  ""
-                ],
-                "links": [
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Prince_Daniel,_Duke_of_Västergötland",
-                    "text": "Prince Daniel, Duke of Västergötland"
-                  }
-                ]
-              },
-              {
-                "name": "Mother",
-                "type": "field",
-                "value": "Victoria, Crown Princess of Sweden",
-                "values": [
-                  ""
-                ],
-                "links": [
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Victoria,_Crown_Princess_of_Sweden",
-                    "text": "Victoria, Crown Princess of Sweden"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "type": "infobox",
-        "has_parts": [
-          {
-            "name": "Names",
-            "type": "section",
-            "has_parts": [
-              {
-                "type": "field",
-                "value": "Oscar Carl Olof",
-                "values": [
-                  ""
-                ]
+                "value": "1426"
               }
             ]
           }
@@ -223,221 +104,230 @@
     ],
     "sections": [
       {
-        "name": "Abstract",
+        "name": "abstract",
         "type": "section",
         "has_parts": [
           {
             "type": "paragraph",
-            "value": "Prince Oscar of Sweden, Duke of Skåne (Oscar Carl Olof; born 2 March 2016) is the younger child and only son of Crown Princess Victoria and her husband, Prince Daniel. He is a grandson of King Carl XVI Gustaf and Queen Silvia and is third in the line of succession to the Swedish throne, after his mother and his sister, Princess Estelle.",
+            "value": "David II (Georgian: დავით II, Davit' II) was a 15th-century Catholicos-Patriarch of Georgia consecrated in 1426.",
             "links": [
               {
-                "url": "https://en.wikipedia.org/wiki/Crown_Princess_Victoria",
-                "text": "Crown Princess Victoria"
+                "url": "https://en.wikipedia.org/wiki/Georgian_language",
+                "text": "Georgian"
               },
               {
-                "url": "https://en.wikipedia.org/wiki/Prince_Daniel",
-                "text": "Prince Daniel"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/King_Carl_XVI_Gustaf",
-                "text": "King Carl XVI Gustaf"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Queen_Silvia",
-                "text": "Queen Silvia"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Line_of_succession_to_the_Swedish_throne",
-                "text": "line of succession to the Swedish throne"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Princess_Estelle",
-                "text": "Princess Estelle"
+                "url": "https://en.wikipedia.org/wiki/Catholicos-Patriarch_of_Georgia",
+                "text": "Catholicos-Patriarch of Georgia"
               }
             ]
           }
         ]
       },
       {
-        "name": "Birth",
+        "name": "biography",
         "type": "section",
         "has_parts": [
           {
             "type": "paragraph",
-            "value": "Prince Oscar was born on 2 March 2016 at Karolinska University Hospital in Solna. His birth was greeted by two 21-gun salutes on the island of Skeppsholmen, opposite Stockholm Palace. His names and title of Duke of Skåne were announced the following day by his maternal grandfather, the King.",
+            "value": "Born into the Bagration dynasty, he was the fourth son of Alexander I, King of Georgia (r. 1412–1442), by his second wife, Princess Tamar of Imereti. There is no scholarly consensus regarding the duration of David II's tenure as some historians, such Michel Tamarati, place three different catholicoi named David—David II or III (1426–1428), David III or IV (1435–1439), and David IV or V (1447–1457)—in the course of the 15th century, the chronology also accepted by the Georgian Orthodox Church. Others, especially Cyril Toumanoff, see in these three names one and the same person, a son of Alexander I. The confusion arises from the three chronological groups of documents, while the inconsistency in the numerals after the catholical names is because some historians, like Tamarati, omit the catholicos David of 859–861.",
             "links": [
               {
-                "url": "https://en.wikipedia.org/wiki/Karolinska_University_Hospital",
-                "text": "Karolinska University Hospital"
+                "url": "https://en.wikipedia.org/wiki/Bagration_dynasty",
+                "text": "Bagration dynasty"
               },
               {
-                "url": "https://en.wikipedia.org/wiki/Solna",
-                "text": "Solna"
+                "url": "https://en.wikipedia.org/wiki/Alexander_I_of_Georgia",
+                "text": "Alexander I"
               },
               {
-                "url": "https://en.wikipedia.org/wiki/21-gun_salute",
-                "text": "21-gun salutes"
+                "url": "https://en.wikipedia.org/wiki/King_of_Georgia",
+                "text": "King of Georgia"
               },
               {
-                "url": "https://en.wikipedia.org/wiki/Skeppsholmen",
-                "text": "Skeppsholmen"
+                "url": "https://en.wikipedia.org/wiki/Reign",
+                "text": "r."
               },
               {
-                "url": "https://en.wikipedia.org/wiki/Stockholm_Palace",
-                "text": "Stockholm Palace"
+                "url": "https://en.wikipedia.org/wiki/Tamar_of_Imereti_(died_1455)",
+                "text": "Tamar of Imereti"
               },
               {
-                "url": "https://en.wikipedia.org/wiki/Duke_of_Skåne",
-                "text": "Duke of Skåne"
+                "url": "https://en.wikipedia.org/wiki/Michel_Tamarati",
+                "text": "Michel Tamarati"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_III,_Catholicos-Patriarch_of_Georgia",
+                "text": "David III or IV"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_IV,_Catholicos-Patriarch_of_Georgia",
+                "text": "David IV or V"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#cite_note-FOOTNOTEToumanoff1949–51190-1"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Georgian_Orthodox_Church",
+                "text": "Georgian Orthodox Church"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#cite_note-2"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Cyril_Toumanoff",
+                "text": "Cyril Toumanoff"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#cite_note-FOOTNOTEToumanoff1949–51190-1"
+              }
+            ],
+            "citations": [
+              {
+                "identifier": "cite_note-1",
+                "text": "[1]"
+              },
+              {
+                "identifier": "cite_note-2",
+                "text": "[2]"
+              },
+              {
+                "identifier": "cite_note-1",
+                "text": "[1]"
               }
             ]
           },
           {
             "type": "paragraph",
-            "value": "A Te Deum thanksgiving service was held in the palace's Royal Chapel on 3 March 2016 to celebrate his birth.",
+            "value": "According to Toumanoff, David, born c. 1417, was destined by his father for the church career at a young age and became, or was designated to become, a catholicos in 1426. In the view of Toumanoff, his tenure lasted until his death c. 1457, while the two other contemporary catholicoi, Theodore and Shio, mentioned in the years 1427–1434 and 1440–1446, respectively, were his locum tenentes with the title of catholicos while David was still very young and before he himself acceded to the primacy of the Georgian church c. 1447.",
             "links": [
               {
-                "url": "https://en.wikipedia.org/wiki/Te_Deum_(religious_service)",
-                "text": "Te Deum"
+                "url": "https://en.wikipedia.org/wiki/Theodore_III_of_Georgia",
+                "text": "Theodore"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Shio_II",
+                "text": "Shio"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/Locum",
+                "text": "locum tenentes"
+              },
+              {
+                "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#cite_note-FOOTNOTEToumanoff1949–51189–190-3"
               }
-            ]
-          },
-          {
-            "type": "paragraph",
-            "value": "Prince Oscar was christened on 27 May 2016 at the Royal Chapel of Stockholm Palace in Stockholm, Sweden. His godparents are King Frederik X of Denmark (then Crown Prince); Crown Princess Mette-Marit of Norway; his maternal aunt Princess Madeleine of Sweden; his mother's cousin Oscar Magnuson; and his father's cousin Hans Åström. He was christened in the family's antique christening gown which was first worn by his great grandfather Prince Gustaf Adolf when he was christened in 1906. His name and date of christening were added in embroidery to the gown.",
-            "links": [
+            ],
+            "citations": [
               {
-                "url": "https://en.wikipedia.org/wiki/Stockholm_Palace",
-                "text": "Stockholm Palace"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Frederik_X",
-                "text": "King Frederik X of Denmark"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Crown_Princess_Mette-Marit_of_Norway",
-                "text": "Crown Princess Mette-Marit of Norway"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Princess_Madeleine_of_Sweden",
-                "text": "Princess Madeleine of Sweden"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Princess_Christina,_Mrs._Magnuson",
-                "text": "Oscar Magnuson"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Hans_Åström",
-                "text": "Hans Åström"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Royal_christening_gown#Sweden",
-                "text": "antique christening gown"
-              },
-              {
-                "url": "https://en.wikipedia.org/wiki/Prince_Gustaf_Adolf,_Duke_of_Västerbotten",
-                "text": "Gustaf Adolf"
+                "identifier": "cite_note-3",
+                "text": "[3]"
               }
             ]
           }
         ]
       },
       {
-        "name": "Titles, styles, honours, and arms",
+        "name": "ancestry",
         "type": "section",
         "has_parts": [
           {
-            "name": "Titles and styles",
-            "type": "section",
-            "has_parts": [
+            "type": "table",
+            "table_references": [
               {
-                "type": "paragraph",
-                "value": "Oscar's full title is: His Royal Highness Prince Oscar Carl Olof, Duke of Skåne."
-              }
-            ]
-          },
-          {
-            "name": "Honours",
-            "type": "section",
-            "has_parts": [
-              {
-                "type": "list",
-                "has_parts": [
-                  {
-                    "type": "list_item",
-                    "value": "Knight and Commander of the Royal Order of the Seraphim",
-                    "links": [
-                      {
-                        "url": "https://en.wikipedia.org/wiki/Royal_Order_of_the_Seraphim",
-                        "text": "Royal Order of the Seraphim"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "list_item",
-                    "value": "Knight of the Order of Charles XIII",
-                    "links": [
-                      {
-                        "url": "https://en.wikipedia.org/wiki/Order_of_Charles_XIII",
-                        "text": "Order of Charles XIII"
-                      }
-                    ]
-                  },
-                  {
-                    "type": "list_item",
-                    "value": "Recipient of the Commemorative Golden Jubilee Medal of His Majesty The King (CXVIG:sJmtIV)",
-                    "links": [
-                      {
-                        "url": "https://en.wikipedia.org/wiki/Swedish_Royal_Jubilee_Commemorative_Medals",
-                        "text": "Commemorative Golden Jubilee Medal of His Majesty The King"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "Arms",
-            "type": "section",
-            "has_parts": [
-              {
-                "type": "paragraph",
-                "value": "Prince Oscar's coat of arms is based on the greater coat of arms of Sweden. It features in the first and fourth quarters, the Three Crowns; in the second, the lion of the House of Bjälbo; and in the third, the griffin of the arms of Skåne, representing the titular designation of his dukedom. In the centre, on an inescutcheon, is the dynastic arms of the House of Bernadotte. Surrounding the shield is the chain of the Order of the Seraphim, of which he was presented with at his baptism.",
-                "links": [
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Greater_coat_of_arms_of_Sweden",
-                    "text": "greater coat of arms of Sweden"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Three_Crowns",
-                    "text": "Three Crowns"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/House_of_Bjälbo",
-                    "text": "House of Bjälbo"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Skåne",
-                    "text": "Skåne"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Inescutcheon",
-                    "text": "inescutcheon"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/House_of_Bernadotte",
-                    "text": "House of Bernadotte"
-                  },
-                  {
-                    "url": "https://en.wikipedia.org/wiki/Order_of_the_Seraphim",
-                    "text": "Order of the Seraphim"
-                  }
-                ]
+                "identifier": "ancestry_table1",
+                "confidence_score": 0.14572600867718327
               }
             ]
           }
         ]
+      }
+    ],
+    "rferences": [
+      {
+        "identifier": "cite_note-1",
+        "type": "text",
+        "text": {
+          "value": "Toumanoff 1949–51, p. 190.",
+          "links": [
+            {
+              "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#CITEREFToumanoff1949–51",
+              "text": "Toumanoff 1949–51"
+            }
+          ]
+        },
+        "source": {
+          "value": "Toumanoff, Cyril (1949–51). \"The Fifteenth-Century Bagratids and the Institution of Collegial Sovereignty in Georgia\". Traditio. 7: 169–221. doi:10.1017/S0362152900015142. S2CID 149043757.",
+          "links": [
+            {
+              "url": "https://en.wikipedia.org/wiki/Doi_(identifier)",
+              "text": "doi"
+            },
+            {
+              "url": "https://doi.org/10.1017%2FS0362152900015142",
+              "text": "10.1017/S0362152900015142"
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/S2CID_(identifier)",
+              "text": "S2CID"
+            },
+            {
+              "url": "https://api.semanticscholar.org/CorpusID:149043757",
+              "text": "149043757"
+            }
+          ]
+        }
+      },
+      {
+        "identifier": "cite_note-2",
+        "type": "web",
+        "metadata": {
+          "access-date": "15 December 2012",
+          "publisher": "Patriarchate of Georgia",
+          "title": "Leaders of Georgian Church",
+          "url": "http://www.patriarchate.ge/_en/?action=mamatavarni"
+        },
+        "text": {
+          "value": "\"Leaders of Georgian Church\". Patriarchate of Georgia. Retrieved 15 December 2012.",
+          "links": [
+            {
+              "url": "http://www.patriarchate.ge/_en/?action=mamatavarni",
+              "text": "\"Leaders of Georgian Church\""
+            }
+          ]
+        }
+      },
+      {
+        "identifier": "cite_note-3",
+        "type": "text",
+        "text": {
+          "value": "Toumanoff 1949–51, pp. 189–190.",
+          "links": [
+            {
+              "url": "https://en.wikipedia.org/wiki/David_II,_Catholicos-Patriarch_of_Georgia#CITEREFToumanoff1949–51",
+              "text": "Toumanoff 1949–51"
+            }
+          ]
+        },
+        "source": {
+          "value": "Toumanoff, Cyril (1949–51). \"The Fifteenth-Century Bagratids and the Institution of Collegial Sovereignty in Georgia\". Traditio. 7: 169–221. doi:10.1017/S0362152900015142. S2CID 149043757.",
+          "links": [
+            {
+              "url": "https://en.wikipedia.org/wiki/Doi_(identifier)",
+              "text": "doi"
+            },
+            {
+              "url": "https://doi.org/10.1017%2FS0362152900015142",
+              "text": "10.1017/S0362152900015142"
+            },
+            {
+              "url": "https://en.wikipedia.org/wiki/S2CID_(identifier)",
+              "text": "S2CID"
+            },
+            {
+              "url": "https://api.semanticscholar.org/CorpusID:149043757",
+              "text": "149043757"
+            }
+          ]
+        }
       }
     ]
   }

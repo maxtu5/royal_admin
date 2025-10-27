@@ -150,11 +150,12 @@ public class WikiLoaderService {
     public List<MonarchApiDto> loadFamilyOne(UUID id) {
         Monarch monarch = monarchService.finById(id);
         if (monarch == null) return new ArrayList<>();
-        return switch (monarch.getStatus()) {
+        List<MonarchApiDto> retval = switch (monarch.getStatus()) {
             case NEW_URL -> loadFamilyApi(monarch);
             case NEW_WEB -> loadFamilyWeb(monarch);
             default -> new ArrayList<>();
         };
+        return retval;
     }
 
     private List<MonarchApiDto> loadFamilyWeb(Monarch monarch) {
@@ -176,6 +177,7 @@ public class WikiLoaderService {
         List<Monarch> newMonarchs = retrieverService.saveLoaded(configuration);
 
         monarch.setStatus(PersonStatus.RESOLVED);
+        monarch.setProcess("AI");
         monarchService.save(monarch);
 
         MonarchApiDto retval = monarchService.toApiDto(monarch);

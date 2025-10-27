@@ -5,12 +5,10 @@ import com.tuiken.royaladmin.ai.Prompts;
 import com.tuiken.royaladmin.datalayer.MonarchRepository;
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,11 +23,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AiResolverService {
+public class AiServiceOpenAi implements AiService {
 
     private final ChatClient aiClient;
     private final WikiCacheRecordRepository wikiCacheRecordRepository;
@@ -59,6 +59,7 @@ public class AiResolverService {
         return response;
     }
 
+    @Override
     public String findGender(String name) {
 
         String promtTemplate = """
@@ -67,7 +68,6 @@ public class AiResolverService {
                         The format should be a JSON object like {"gender": "MALE"} or {"gender": "MALE"}.
                         Return {"gender": "UNKNOWN"} if you can't decide. 
                         Make sure there are no newline characters in the JSON object response. 
-                
                 """;
         String prompt = String.format(promtTemplate, name);
 
@@ -90,7 +90,8 @@ public class AiResolverService {
         return response;
     }
 
-    public Monarch fullyGenerate(String url, PersonStatus status) {
+    @Override
+    public Monarch generateMonarch(String url) {
         Monarch monarch = monarchRepository.findByUrl(url).orElse(new Monarch(url));
         if (monarch.getId() != null && monarch.getStatus() == PersonStatus.EPHEMERAL) {
             System.out.println("Ephemeral already exists");
@@ -102,18 +103,30 @@ public class AiResolverService {
         if (obj == null) {return null;}
 
         monarch.setName(JsonUtils.extractWikiName(rootArray));
-        monarch.setGender(Gender.valueOf(obj.optString("gender", "UNKNOWN")));
+
+        List<String> allowedGenders = Arrays.stream(Gender.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
+        String genderStr = obj.optString("gender", "UNKNOWN").toUpperCase();
+        if (allowedGenders.contains(genderStr)) {
+            monarch.setGender(Gender.valueOf(genderStr));
+        }
 
         monarch.setBirth(parseDate(obj.optString("birth")));
         monarch.setDeath(parseDate(obj.optString("death")));
 
-        monarch.setStatus(status);
+        monarch.setStatus(PersonStatus.NEW_AI);
         monarch.setImageUrl(wikiService.findMainImage(url));
 //        if (monarch.getImageUrl() != null) {
 //            monarch.setImageCaption(tryForCaption(monarch.getImageUrl(), rootArray));
 //        }
         monarch.setDescription(obj.optString("description", null));
         return monarch;
+    }
+
+    @Override
+    public Monarch generateMonarch(String url, String source) {
+        return null;
     }
 
     private String tryForCaption(String imageUrl, JSONArray jsonArray) {
@@ -144,10 +157,10 @@ public class AiResolverService {
 
     private JSONObject queryForMonarch(JSONArray rootArray) {
         List<String> wikiContent = JsonUtils.extractWikiText(rootArray);
-        String searchText = JsonUtils.composeShortText(wikiContent, 4000);
+        String searchText = JsonUtils.composeShortText(wikiContent, 3000);
         int contentUsage = (int) (searchText.length() * 100.00 / wikiContent.stream().mapToInt(String::length).sum());
         String prompt = String.format(
-                contentUsage > 75 ? Prompts.PERSON_ALL_WDESC.getText() : Prompts.PERSON_ALL.getText(),
+                contentUsage > 50 ? Prompts.PERSON_ALL_WDESC.getText() : Prompts.PERSON_ALL.getText(),
                 wikiContent);
         System.out.println("!!! Expensive AI generation");
         String responseJson = aiClient.call(prompt);

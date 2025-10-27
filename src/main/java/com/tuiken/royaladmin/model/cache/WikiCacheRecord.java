@@ -24,7 +24,7 @@ public class WikiCacheRecord {
     @Column(columnDefinition = "longtext")
     String body;
     @Column(columnDefinition = "varchar(10)")
-    UUID status;
+    String status;
 
     public WikiCacheRecord(String url) {
         this.url = url;

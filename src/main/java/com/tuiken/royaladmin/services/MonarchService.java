@@ -27,7 +27,7 @@ public class MonarchService {
     private final ProvenenceRepository provenenceRepository;
     private final ProvenanceService provenanceService;
     private final ThroneRepository throneRepository;
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
 
     public Monarch findByUrl(String monarchUrl) {
         return monarchRepository.findByUrl(monarchUrl).orElse(null);

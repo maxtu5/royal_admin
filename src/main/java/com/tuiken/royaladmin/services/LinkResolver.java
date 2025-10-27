@@ -16,7 +16,7 @@ public class LinkResolver {
     private static final String REDIRECT_URL = "https://en.wikipedia.org/w/api.php?action=query&format=json&titles=%s&redirects=1&formatversion=2";
 
     public String resolve(String url) {
-        System.out.println("Resolving " + url);
+//        System.out.println("Resolving " + url);
         String decodedUrl = URLDecoder.decode(url);
 
         String title = extractTitle(decodedUrl);

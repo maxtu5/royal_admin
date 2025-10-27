@@ -16,4 +16,6 @@ public interface WikiCacheRecordRepository extends CrudRepository<WikiCacheRecor
 
     List<WikiCacheRecord> findAll();
     boolean existsByUrl(String url);
+
+    void deleteByUrl(String url);
 }

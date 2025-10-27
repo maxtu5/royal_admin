@@ -5,7 +5,6 @@ import com.tuiken.royaladmin.datalayer.MonarchRepository;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.exceptions.NotPersonWikiApiException;
-import com.tuiken.royaladmin.exceptions.UnexpectedInfoboxWikiApiException;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.entities.Monarch;
@@ -35,7 +34,7 @@ public class RepairService {
 
     private final MonarchService monarchService;
     private final ReignRepository reignRepository;
-    private final AiResolverService aiResolverService;
+    private final AiServiceOpenAi aiResolverService;
     private final WikiService wikiService;
     private final WikiCacheRecordRepository wikiCacheRecordRepository;
     private final SmartIssueSearchService smartIssueSearchService;
@@ -47,6 +46,10 @@ public class RepairService {
     private final WikiDirectService wikiDirectService;
     private final MonarchRepository monarchRepository;
     private final WikiLoaderService wikiLoaderService;
+    private final LinkResolver resolver;
+    private final WikiCacheService wikiCacheService;
+    private final AiService aiService;
+
 
     public boolean reportProcess() {
         monarchService.reportProcess();
@@ -69,7 +72,7 @@ public class RepairService {
                         m.setGender(reign != null && reign.getTitle() != null ? Gender.fromTitle(reign.getTitle()) : null);
                     }
                     if (m.getGender() == null) {
-                        String aiResolved = aiResolverService.findGender(m.getName());
+                        String aiResolved = aiService.findGender(m.getName());
                         try {
                             m.setGender(Gender.valueOf(aiResolved));
                         } catch (IllegalArgumentException e) {
@@ -281,62 +284,82 @@ public class RepairService {
         return false;
     }
 
+
     public List<MonarchApiDto> resolveUnusedCacheRecord(String url) {
-        System.out.println("@@@### " +url);
-        Set<String> strings = null;
+        List<MonarchApiDto> retval = new ArrayList<>();
+        System.out.println("\n=@ Resolving unused cache record " + url);
+        if (!wikiCacheService.isCached(url)) {
+            System.out.println("cache miss");
+            return retval;
+        }
+        String resolvedUrl = resolver.resolve(url);
+        if (!resolvedUrl.equals(url)) {
+            if (wikiCacheService.isCached(resolvedUrl)) {
+                wikiCacheService.deleteWikiCacheRecord(url);
+                System.out.println("Deleted by unresolved url " + url + ". Must be: " + resolvedUrl);
+            } else {
+                wikiCacheService.changeUrl(url, resolvedUrl);
+                System.out.println("Renames unresolved url " + url + " to  " + resolvedUrl+"\nProcessing");
+            }
+            return retval;
+        }
+        Set<String> monarchUrls = null;
+        JSONArray rootArray = wikiCacheService.extractRootArray(resolvedUrl);
         try {
-            strings = extractWikiLinks(url, true).stream().filter(s->!s.contains("#")).collect(Collectors.toSet());
+            monarchUrls = extractWikiLinks(rootArray);
         } catch (NotPersonWikiApiException e) {
             throw new RuntimeException(e);
-        } catch (UnexpectedInfoboxWikiApiException e) {
-            throw new RuntimeException(e);
         }
-
-        Set<String> monarchUrls = strings.stream().filter(monarchRepository::existsByUrl).collect(Collectors.toSet());
-
-        if (monarchUrls.isEmpty() && strings.size()<6) monarchUrls = strings.stream()
-                .map(link->{
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                    return linkResolver.resolve(link);
-                }).filter(Objects::nonNull)
-                .filter(monarchRepository::existsByUrl).collect(Collectors.toSet());
-
+        monarchUrls = refine(monarchUrls);
         System.out.println("URLS in article: " + monarchUrls.size());
+
         Set<String> backLinked = monarchUrls.stream().filter(monarchUrl -> {
             try {
-                return extractWikiLinks(monarchUrl, false).contains(url);
+                return extractWikiLinks(wikiCacheService.extractRootArray(resolvedUrl)).contains(resolvedUrl);
             } catch (NotPersonWikiApiException e) {
                 throw new RuntimeException(e);
-            } catch (UnexpectedInfoboxWikiApiException ignored) {
-                return true;
             }
         }).collect(Collectors.toSet());
         System.out.println("URLS back link: " + backLinked.size());
         if (backLinked.isEmpty()) return null;
 
-        List<String> paragraphs = extractWikiText(url);
-
-//        Set<String> wikiImages = extractWikiImages(url);
-
-        Monarch monarch = aiResolverService.fullyGenerate(url, PersonStatus.EPHEMERAL);
-//        monarch.setImageUrl(wikiService.findMainImage(url));
+        Monarch monarch = personBuilder.buildPerson(resolvedUrl, rootArray);
+        if (monarch.getStatus().equals(PersonStatus.NEW_AI))
+            monarch.setStatus(PersonStatus.EPHEMERAL);
         monarchService.save(monarch);
         Set<MonarchApiDto> allLoaded = new HashSet<>();
         backLinked.forEach(link -> {
             Monarch relative = monarchService.findByUrl(link);
             if (relative.getStatus().equals(PersonStatus.RESOLVED)) {
                 relative.setStatus(PersonStatus.NEW_URL);
+                relative.setProcess("AI");
                 monarchService.save(relative);
             }
             List<MonarchApiDto> loaded = wikiLoaderService.loadFamilyOne(relative.getId());
             allLoaded.addAll(loaded);
         });
         allLoaded.add(monarchService.toApiDto(monarch));
-        return allLoaded.stream().filter(m->!m.getStatus().equals(PersonStatus.RESOLVED)).toList();
+        retval = allLoaded.stream().filter(m -> !m.getStatus().equals(PersonStatus.RESOLVED)).toList();
+        return retval;
+    }
+
+    private Set<String> refine(Set<String> strings) {
+        Set<String> monarchUrls = strings.stream().filter(monarchRepository::existsByUrl).collect(Collectors.toSet());
+        return !monarchUrls.isEmpty() ? monarchUrls :
+                (strings.size() > 6 ? new HashSet<>() :
+                        strings.stream()
+                        .map(link -> {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                            return linkResolver.resolve(link);
+                        })
+                        .filter(Objects::nonNull)
+                        .filter(monarchRepository::existsByUrl)
+                        .collect(Collectors.toSet())
+                );
     }
 
     public List<String> extractWikiText(String url) {
@@ -352,21 +375,13 @@ public class RepairService {
         }
     }
 
-    public Set<String> extractWikiLinks(String url, boolean breakOnInfobox) throws NotPersonWikiApiException, UnexpectedInfoboxWikiApiException {
-        String jsonString = wikiCacheRecordRepository.findByUrl(url)
-                .orElseThrow(() -> new RuntimeException("No record found for URL: " + url))
-                .getBody();
-        try {
-            JSONArray rootArray = new JSONArray(jsonString);
-            if (rootArray.getJSONObject(0).has("error") &&
-                    rootArray.getJSONObject(0).getString("error").equals("not a person"))
-                throw new NotPersonWikiApiException("not person");
-            if (breakOnInfobox && JsonUtils.hasInfobox(rootArray))
-                throw new UnexpectedInfoboxWikiApiException("must not have infobox");
-            return JsonUtils.extractWikiLinks(rootArray);
-        } catch (JSONException e) {
-            throw new RuntimeException("Failed to parse JSON", e);
-        }
+    private Set<String> extractWikiLinks(JSONArray rootArray) throws NotPersonWikiApiException {
+        if (rootArray.getJSONObject(0).has("error") &&
+                rootArray.getJSONObject(0).getString("error").equals("not a person"))
+            throw new NotPersonWikiApiException("not person");
+        return JsonUtils.extractWikiLinks(rootArray).stream()
+                .filter(s -> !s.contains("#"))
+                .collect(Collectors.toSet());
     }
 
 }
