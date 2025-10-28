@@ -1,4 +1,4 @@
-package com.tuiken.royaladmin.ai;
+package com.tuiken.royaladmin.services.ai;
 
 import lombok.Getter;
 

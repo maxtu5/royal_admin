@@ -1,4 +1,4 @@
-package com.tuiken.royaladmin.services;
+package com.tuiken.royaladmin.services.ai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -37,14 +34,9 @@ public class AiServiceGemini implements AiService {
     @Override
     public Monarch generateMonarch(String url, String source) {
         String prompt = buildPrompt(source);
+        String jsonText = sendPrompt(prompt);
 
-        GeminiRequest request = new GeminiRequest(prompt);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
-        ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(MODEL_URL, entity, GeminiResponse.class);
-        String jsonText = extractJson(response.getBody());
-        if (jsonText == null || jsonText.contains("{ null }")) {
+        if (jsonText == null) {
             return null;
         }
 
@@ -52,27 +44,22 @@ public class AiServiceGemini implements AiService {
         monarch.setUrl(url);
         monarch.setStatus(PersonStatus.NEW_AI);
         return monarch;
-
     }
 
     @Override
     public String findGender(String name) {
-        String promtTemplate = """
-                        Tell me if %s is male or female.
-                        Provide response in JSON format only. 
-                        The format should be a JSON object like {"gender": "MALE"} or {"gender": "MALE"}.
-                        Return {"gender": "UNKNOWN"} if you can't decide. 
-                        Make sure there are no newline characters in the JSON object response. 
-                """;
-        String prompt = String.format(promtTemplate, name);
+        String promptTemplate = """
+        Tell me if %s is male or female.
+        Provide response in JSON format only.
+        The format should be a JSON object like {"gender": "MALE"} or {"gender": "FEMALE"}.
+        Return {"gender": "UNKNOWN"} if you can't decide.
+        Make sure there are no newline characters in the JSON object response.
+    """;
 
-        GeminiRequest request = new GeminiRequest(prompt);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
-        ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(MODEL_URL, entity, GeminiResponse.class);
-        String jsonText = extractJson(response.getBody());
-        if (jsonText == null || jsonText.contains("{ null }")) {
+        String prompt = String.format(promptTemplate, name);
+        String jsonText = sendPrompt(prompt);
+
+        if (jsonText == null) {
             return "";
         }
 
@@ -84,6 +71,14 @@ public class AiServiceGemini implements AiService {
             e.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    @Override
+    public String createDescription(String name) {
+        String promptTemplate = "give me 500 chars text about %s";
+        String prompt = String.format(promptTemplate, name);
+        String jsonText = sendPrompt(prompt);
+        return jsonText == null ? "":jsonText;
     }
 
     private String buildPrompt(String inputText) {
@@ -98,6 +93,24 @@ public class AiServiceGemini implements AiService {
                 "Return { null } if the provided text is not a noble person description.\n\n" +
                 "Here comes the text:\n" + inputText;
     }
+
+
+    public String sendPrompt(String prompt) {
+        GeminiRequest request = new GeminiRequest(prompt);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(MODEL_URL, entity, GeminiResponse.class);
+        String jsonText = extractJson(response.getBody());
+
+        if (jsonText == null || jsonText.contains("{ null }")) {
+            return null;
+        }
+
+        return jsonText;
+    }
+
 
     private String extractJson(GeminiResponse response) {
         if (response == null || response.candidates == null || response.candidates.isEmpty()) return null;
@@ -117,6 +130,7 @@ public class AiServiceGemini implements AiService {
             monarch.setDescription(node.get("description").asText());
             return monarch;
         } catch (Exception e) {
+            System.out.println(jsonText);
             throw new RuntimeException("Failed to parse Monarch JSON", e);
         }
     }

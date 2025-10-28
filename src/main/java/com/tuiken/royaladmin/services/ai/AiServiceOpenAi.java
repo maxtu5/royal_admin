@@ -1,12 +1,12 @@
-package com.tuiken.royaladmin.services;
+package com.tuiken.royaladmin.services.ai;
 
 
-import com.tuiken.royaladmin.ai.Prompts;
 import com.tuiken.royaladmin.datalayer.MonarchRepository;
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
+import com.tuiken.royaladmin.services.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -83,6 +83,7 @@ public class AiServiceOpenAi implements AiService {
         return response;
     }
 
+    @Override
     public String createDescription(String name) {
         String promtTemplate = "give me 500 chars text about %s";
         String prompt = String.format(promtTemplate, name);

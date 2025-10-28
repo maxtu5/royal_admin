@@ -10,10 +10,7 @@ import lombok.Data;
 import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -23,6 +20,19 @@ public class MonarchApiDto {
     private UUID id;
     private String url;
     private String name;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        MonarchApiDto that = (MonarchApiDto) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
     private Gender gender;
     private Set<House> house = new HashSet<>();
     @JsonFormat(pattern="yyyy-MM-dd")

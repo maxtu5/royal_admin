@@ -2,7 +2,7 @@ package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.workflows.UnhandledRecord;
+import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -21,7 +21,6 @@ public class SmartIssueSearchService {
     private final AiServiceOpenAi aiResolverService;
     private final LinkResolver resolver;
     private final WikiService wikiService;
-    private final UnhandledRecordService unhandledRecordService;
 
     private static final String SIMPLE_URL_PREFIX = "https://simple.wikipedia.org/wiki/";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";
@@ -35,7 +34,6 @@ public class SmartIssueSearchService {
         return names.stream()
                 .map(name -> {
                     String url = findInAllLinks(name, allLinks);
-                    if (Strings.isBlank(url)) saveUnhandledRecord(name, url, root.getUrl());
                     url = (url != null && url.contains("#")) ? url.substring(0, url.indexOf("#")) : url;
                     return url;
                 })
@@ -91,12 +89,6 @@ public class SmartIssueSearchService {
                 .orElse(null);
     }
 
-    private void saveUnhandledRecord(String name, String childUrl, String parentUrl) {
-        UnhandledRecord unhandledRecord = new UnhandledRecord();
-        unhandledRecord.setChild(name);
-        unhandledRecord.setParentUrl(parentUrl);
-        unhandledRecord.setChildUrl(childUrl);
-        unhandledRecordService.save(unhandledRecord);
-    }
+
 
 }

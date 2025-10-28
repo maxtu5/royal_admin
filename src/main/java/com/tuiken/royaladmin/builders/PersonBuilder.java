@@ -8,6 +8,8 @@ import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.services.*;
+import com.tuiken.royaladmin.services.ai.AiService;
+import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;

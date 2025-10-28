@@ -3,6 +3,7 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.House;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
+import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
 import com.tuiken.royaladmin.utils.DatesParser;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;

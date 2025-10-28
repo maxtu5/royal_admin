@@ -9,6 +9,8 @@ import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
+import com.tuiken.royaladmin.services.ai.AiService;
+import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +29,7 @@ public class MonarchService {
     private final ProvenenceRepository provenenceRepository;
     private final ProvenanceService provenanceService;
     private final ThroneRepository throneRepository;
-    private final AiServiceOpenAi aiResolverService;
+    private final AiService aiService;
 
     public Monarch findByUrl(String monarchUrl) {
         return monarchRepository.findByUrl(monarchUrl).orElse(null);
@@ -202,7 +204,7 @@ public class MonarchService {
         if (Strings.isNotBlank(monarch.getDescription())) {
             return monarch.getDescription();
         } else {
-            String desc = aiResolverService.createDescription(monarch.getName()+(monarch.getBirth()==null?"":". he was born in "+monarch.getBirth().atZone(ZoneId.systemDefault()).toLocalDate().getYear()));
+            String desc = aiService.createDescription(monarch.getName()+(monarch.getBirth()==null?"":". he was born in "+monarch.getBirth().atZone(ZoneId.systemDefault()).toLocalDate().getYear()));
             System.out.println(desc);
             System.out.println(desc.length());
             monarch.setDescription(desc);
@@ -219,5 +221,9 @@ public class MonarchService {
         long all = monarchRepository.count();
         long done = monarchRepository.countByProcess("Done");
         System.out.printf("Done: %s/%s (%s %%)%n", done, all, 100*((double)done/all));
+    }
+
+    public boolean existsByUrl(String url) {
+        return monarchRepository.existsByUrl(url);
     }
 }

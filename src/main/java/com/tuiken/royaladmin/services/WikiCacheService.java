@@ -38,4 +38,12 @@ public class WikiCacheService {
         record.setUrl(resolvedUrl);
         wikiCacheRecordRepository.save(record);
     }
+
+    public WikiCacheRecord findByUrl(String resolvedUrl) {
+        return wikiCacheRecordRepository.findByUrl(resolvedUrl).orElse(null);
+    }
+
+    public void save(WikiCacheRecord wikiCacheRecord) {
+        wikiCacheRecordRepository.save(wikiCacheRecord);
+    }
 }

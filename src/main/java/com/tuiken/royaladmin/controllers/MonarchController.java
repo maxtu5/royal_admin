@@ -8,7 +8,6 @@ import com.tuiken.royaladmin.model.api.output.MonarchStatsApiDto;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.services.MonarchService;
 import com.tuiken.royaladmin.services.StatsService;
-import com.tuiken.royaladmin.services.UnhandledRecordService;
 import com.tuiken.royaladmin.services.WikiLoaderService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class MonarchController {
     private final MonarchService monarchService;
     private final WikiLoaderService wikiLoaderService;
     private final StatsService statsService;
-    private final UnhandledRecordService unhandledRecordService;
     private final PersonBuilder personBuilder;
 
     @GetMapping("/stats")
@@ -93,22 +91,6 @@ public class MonarchController {
     @PostMapping(path = "/resolve/{id}")
     public List<MonarchApiDto> resolveMonarch(@PathVariable String id) {
         return wikiLoaderService.loadFamilyOne(UUID.fromString(id));
-    }
-
-    @GetMapping(path = "/unhandled")
-    public int resolveUnhandled() {
-        unhandledRecordService.resolve();
-        return unhandledRecordService.deleteKilled();
-    }
-
-    @GetMapping(path = "/unhandled/order")
-    public long resolveUnhandledFind() {
-        return unhandledRecordService.orderResolve();
-    }
-
-    @GetMapping(path = "/unhandled/receive")
-    public long resolveUnhandledGet() {
-        return unhandledRecordService.receiveResolve();
     }
 
 //    @PostMapping(path = "/update")

@@ -2,6 +2,7 @@ package com.tuiken.royaladmin.controllers;
 
 import com.tuiken.royaladmin.model.api.input.UrlDto;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
+import com.tuiken.royaladmin.services.DataFeedService;
 import com.tuiken.royaladmin.services.RepairService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -16,6 +17,7 @@ import java.util.List;
 public class RepairController {
 
     private final RepairService repairService;
+    private final DataFeedService dataFeedService;
 
     @GetMapping(path = "/{code}")
     public boolean repair(@PathVariable int code) throws Exception {
@@ -46,7 +48,7 @@ public class RepairController {
     @PostMapping(path = "/byurl")
     public List<MonarchApiDto> repairByUrl(@RequestBody UrlDto url) {
         if (Strings.isNotBlank(url.getUrl())) {
-            return repairService.resolveUnusedCacheRecord(url.getUrl());
+            return dataFeedService.resolveUnusedCacheRecord(url.getUrl());
         } else return null;
     }
 
