@@ -10,6 +10,8 @@ import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.services.*;
 import com.tuiken.royaladmin.services.ai.AiService;
 import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
+import com.tuiken.royaladmin.services.wiki.LinkResolver;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -29,7 +31,6 @@ public class PersonBuilder {
     private final ReignRepository reignRepository;
     private final AiServiceOpenAi aiResolverService;
     private final AiService aiService;
-    private final WikiDirectService wikiDirectService;
 
     public Monarch findOrCreate(String url, Gender gender) {
 
@@ -48,7 +49,7 @@ public class PersonBuilder {
     }
 
     public Monarch buildPerson(String url) {
-        JSONArray jsonArray = wikiService.read(url);
+        JSONArray jsonArray = wikiService.readJson(url);
         return (jsonArray == null) ? null : buildPerson(url, jsonArray);
     }
 
@@ -107,7 +108,7 @@ public class PersonBuilder {
 
     public List<Reign> createReignsWithSave(String url, Country country) {
 
-        JSONArray jsonArray = wikiService.read(url);
+        JSONArray jsonArray = wikiService.readJson(url);
         return RetrieverService.retrieveReigns(jsonArray, country).stream()
                 .map(reignRepository::save).collect(Collectors.toList());
 

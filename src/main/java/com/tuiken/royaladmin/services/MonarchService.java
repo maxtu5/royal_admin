@@ -57,7 +57,6 @@ public class MonarchService {
 
     @Transactional
     public MonarchApiDto deleteByUrl(String url) {
-        MonarchApiDto retval = null;
         Monarch monarch = findByUrl(url);
         if (monarch != null) {
             List<Provenence> related = provenanceService.findProvenencesWith(monarch.getId());
@@ -92,11 +91,12 @@ public class MonarchService {
                     }
                 }
             }
-            retval = toApiDto(monarch);
+            MonarchApiDto retval = toApiDto(monarch);
             System.out.printf("Deleting monarch %s, %s%n", monarch.getName(), monarch.getId());
             monarchRepository.deleteById(monarch.getId());
+            return retval;
         }
-        return retval;
+        return null;
     }
 
     public MonarchApiDto toApiDtoByUrl(String url) {

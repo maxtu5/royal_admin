@@ -1,4 +1,4 @@
-package com.tuiken.royaladmin.services;
+package com.tuiken.royaladmin.services.wiki;
 
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.wikitoken.TokenRequestDto;

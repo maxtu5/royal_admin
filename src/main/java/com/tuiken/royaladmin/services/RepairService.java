@@ -6,13 +6,16 @@ import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.entities.Monarch;
-import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
 import com.tuiken.royaladmin.model.entities.Throne;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.House;
+import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.services.ai.AiService;
 import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
+import com.tuiken.royaladmin.services.wiki.LinkResolver;
+import com.tuiken.royaladmin.services.wiki.WikiCacheService;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,52 +45,54 @@ public class RepairService {
     private final ThroneService throneService;
     private final RetrieverService retrieverService;
     private final PersonBuilder personBuilder;
-    private final WikiDirectService wikiDirectService;
     private final MonarchRepository monarchRepository;
-    private final WikiLoaderService wikiLoaderService;
+    private final ThroneLoaderService throneLoaderService;
     private final LinkResolver resolver;
     private final WikiCacheService wikiCacheService;
     private final AiService aiService;
 
+    public boolean provenenceMissingIds() {
+        provenanceService.findAllProvenances()
+                .forEach(provenence -> {
+                    if (monarchService.finById(provenence.getId()) == null) {
+                        System.out.println("Deleting");
+                        provenanceService.deleteProvenence(provenence);
+                    }
+                    else {
+                        if (provenence.getMother() != null && monarchService.finById(provenence.getMother()) == null) {
+                            provenence.setMother(null);
+                            provenanceService.save(provenence);
+                        }
+                        if (provenence.getFather() != null && monarchService.finById(provenence.getFather()) == null) {
+                            provenence.setFather(null);
+                            provenanceService.save(provenence);
+                        }
+                        if (provenence.getFather() == null && provenence.getMother() == null)
+                            provenanceService.deleteProvenence(provenence);
+                    }
+                });
+        return true;
+    }
+
+    public boolean provenenceGenderMismatch() {
+        provenanceService.findAllProvenances()
+                .forEach(provenence -> {
+                    if (provenence.getMother() != null && monarchService.existsByUrl(String.valueOf(provenence.getMother()))) {
+                        if (!monarchService.finById(provenence.getMother()).getGender().equals(Gender.FEMALE))
+                            System.out.println("oh mum " + monarchService.finById(provenence.getMother()).getUrl());
+                    }
+
+                    if (provenence.getFather() != null && monarchService.existsByUrl(String.valueOf(provenence.getFather()))) {
+                        if (!monarchService.finById(provenence.getFather()).getGender().equals(Gender.MALE))
+                            System.out.println("oh dad " + monarchService.finById(provenence.getFather()).getUrl());
+                    }
+                });
+        return true;
+    };
 
     public boolean reportProcess() {
         monarchService.reportProcess();
         return true;
-    }
-
-    @Transactional
-    public boolean reportGender() {
-        List<Monarch> all = monarchService.loadAllMonarchs().stream()
-                .filter(m -> m.getGender() == null)
-                .collect(Collectors.toList());
-        Map<String, Long> collect = all.stream()
-                .filter(m -> m.getGender() == null)
-                .map(m -> {
-                    if (!Strings.isBlank(m.getName())) {
-                        m.setGender(Gender.fromTitle(m.getName()));
-                    }
-                    if (m.getGender() == null && !m.getReignIds().isEmpty()) {
-                        Reign reign = reignRepository.findById(m.getReignIds().get(0)).orElse(null);
-                        m.setGender(reign != null && reign.getTitle() != null ? Gender.fromTitle(reign.getTitle()) : null);
-                    }
-                    if (m.getGender() == null) {
-                        String aiResolved = aiService.findGender(m.getName());
-                        try {
-                            m.setGender(Gender.valueOf(aiResolved));
-                        } catch (IllegalArgumentException e) {
-                            System.out.println("UNKNOWN???");
-                        }
-                        System.out.println(m.getName());
-                        System.out.println(m.getGender() + "\n");
-                    }
-                    return m;
-                })
-                .map(monarchService::save)
-                .collect(Collectors.groupingBy(t -> t.getGender() == null ? "NULL" : t.getGender().toString(), Collectors.counting()));
-        for (Map.Entry<String, Long> es : collect.entrySet()) {
-            System.out.println(es.getKey() + " " + es.getValue());
-        }
-        return false;
     }
 
     @Transactional
@@ -106,7 +111,7 @@ public class RepairService {
         Set<String> allHouses = new HashSet<>();
         for (Monarch monarch : allPeople) {
             if (monarch.getHouse().isEmpty()) {
-                JSONArray jsonArray = wikiService.read(monarch.getUrl());
+                JSONArray jsonArray = wikiService.readJson(monarch.getUrl());
                 List<JSONObject> list = JsonUtils.arrayTolist(jsonArray);
                 List<JSONObject> houseObjects = JsonUtils.drillForName(list, "House", "Dynasty", "Noble Family");
                 Set<String> houseStrings = JsonUtils.readFromLinks(houseObjects, "text").stream()
@@ -123,30 +128,18 @@ public class RepairService {
     }
 
     public boolean rereadHousesFromCache() {
-
-        List<Monarch> list = monarchService.loadAllMonarchs().stream()
-                .filter(m -> m.getProcess() == null || !m.getProcess().equals("Done"))
-                .toList();
-
-//                wikiCacheRecordRepository.findAll().stream()
-//                .map(cr -> monarchService.findByUrl(cr.getUrl()))
-//                .filter(Objects::nonNull)
-//                .filter(m->m.getProcess()==null || !m.getProcess().equals("Done"))
-////                .filter(m -> m.getHouse().size() > 1)
-//                .limit(100)
-//                .toList();
-        list.forEach(monarch -> {
-            updateHouses(monarch);
-        });
-
-//        System.out.println("In cache: " + list.size());
+        monarchService.loadAllMonarchs().stream()
+                .filter(m -> m.getStatus().equals(PersonStatus.RESOLVED) &&
+                        m.getHouse().isEmpty() &&
+                        (m.getProcess() == null || !m.getProcess().equals("Done")))
+                .forEach(this::updateHouses);
         return true;
     }
 
     @Transactional
     public void updateHouses(Monarch monarch) {
         System.out.println(monarch.getUrl());
-        JSONArray read = wikiService.read(monarch.getUrl());
+        JSONArray read = wikiService.readJson(monarch.getUrl());
         Set<House> houses = RetrieverService.retrieveHouses(read);
         houses.forEach(System.out::print);
         System.out.println();
@@ -155,19 +148,6 @@ public class RepairService {
         houses.forEach(monarch.getHouse()::add);
         monarch.setProcess("Done");
         monarchService.save(monarch);
-    }
-
-    public boolean missingIdsProvenence() {
-        List<Provenence> provenences = provenanceService.findAllProvenances().stream()
-                .filter(p -> p.getMother() != null && monarchService.finById(p.getMother()) == null ||
-                        p.getFather() != null && monarchService.finById(p.getFather()) == null ||
-                        monarchService.finById(p.getId()) == null)
-                .toList();
-        System.out.println("Deleting provenences " + provenences.size());
-        for (Provenence p : provenences) {
-            provenanceService.deleteProvenence(p);
-        }
-        return true;
     }
 
     public boolean reportReignCollisions() {
@@ -248,7 +228,7 @@ public class RepairService {
         monarches.stream()
                 .limit(10)
                 .forEach(m -> {
-                    JSONArray monarchJson = wikiService.read(m.getUrl());
+                    JSONArray monarchJson = wikiService.readJson(m.getUrl());
                     List<JSONObject> inf = JsonUtils.readInfoboxes(monarchJson);
                     for (JSONObject infobox : inf) {
                         JSONObject image = JsonUtils.findImage(inf);

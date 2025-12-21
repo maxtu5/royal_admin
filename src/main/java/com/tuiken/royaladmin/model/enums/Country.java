@@ -46,7 +46,11 @@ public enum Country {
     PARMA(new String[]{"Parma"}),
     SERBIA(new String[]{"Yugoslavia", "Serbia"}),
     HANOVER(new String[]{"Hanover"}),
-    PALATINATE_RHINE(new String[]{"Palatine of the Rhine", "Elector Palatine"});
+    PALATINATE_RHINE(new String[]{"Palatine of the Rhine", "Elector Palatine"}),
+    ROMANIA(new String[]{"Romania"}),
+    OTTOMAN(new String[]{"Sultan of the Ottoman Empire"}),
+    WALLACHIA(new String[]{"Wallachia"}),
+    LITHUANIA(new String[]{"Lithuania"});
 
     @Getter
     private final String[] keywords;

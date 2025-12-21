@@ -6,6 +6,9 @@ import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.cache.WikiCacheRecord;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
+import com.tuiken.royaladmin.services.wiki.LinkResolver;
+import com.tuiken.royaladmin.services.wiki.WikiCacheService;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -21,7 +24,21 @@ public class DataFeedService {
     private final MonarchService monarchService;
     private final LinkResolver linkResolver;
     private final PersonBuilder personBuilder;
-    private final WikiLoaderService wikiLoaderService;
+    private final ThroneLoaderService throneLoaderService;
+    private final WikiService wikiService;
+
+    public Monarch resolveUrlSimple(String url) {
+        String resolvedUrl = linkResolver.resolve(url);
+        if (monarchService.existsByUrl(resolvedUrl)) {
+            System.out.println("Already exists: " + url);
+            return null;
+        };
+        JSONArray rootArray = wikiService.readJson(resolvedUrl);
+        Monarch monarch = personBuilder.buildPerson(resolvedUrl, rootArray);
+        if (monarch.getStatus().equals(PersonStatus.NEW_AI))
+            monarch.setStatus(PersonStatus.EPHEMERAL);
+        return monarchService.save(monarch);
+    }
 
     public List<MonarchApiDto> resolveUnusedCacheRecord(String url) {
         List<MonarchApiDto> retval = new ArrayList<>();
@@ -88,7 +105,7 @@ public class DataFeedService {
                 relative.setProcess("AI");
                 monarchService.save(relative);
             }
-            List<MonarchApiDto> loaded = wikiLoaderService.loadFamilyOne(relative.getId());
+            List<MonarchApiDto> loaded = throneLoaderService.loadFamilyOne(relative.getId());
             allLoaded.addAll(loaded);
         });
         allLoaded.add(monarchService.toApiDto(monarch));

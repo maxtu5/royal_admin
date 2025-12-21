@@ -3,6 +3,8 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.services.ai.AiServiceOpenAi;
+import com.tuiken.royaladmin.services.wiki.LinkResolver;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
@@ -17,10 +19,7 @@ public class SmartIssueSearchService {
 
     private static final String WIKI_URL_TEMPLATE = "https://en.wikipedia.org%s";
     private final PersonBuilder personBuilder;
-    private final MonarchService monarchService;
-    private final AiServiceOpenAi aiResolverService;
     private final LinkResolver resolver;
-    private final WikiService wikiService;
 
     private static final String SIMPLE_URL_PREFIX = "https://simple.wikipedia.org/wiki/";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";

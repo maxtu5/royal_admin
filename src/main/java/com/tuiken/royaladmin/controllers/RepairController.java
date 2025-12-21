@@ -25,7 +25,7 @@ public class RepairController {
             case 000:
                 return repairService.reportProcess();
             case 100:
-                return repairService.reportGender();
+//                return repairService.reportGender();
             case 200:
                 return repairService.reportMissingHouses();
             case 201:
@@ -33,8 +33,10 @@ public class RepairController {
             case 202:
                 return repairService.rereadHousesFromCache();
 
-            case 400:
-                return repairService.missingIdsProvenence();
+            case 400: {
+                repairService.provenenceMissingIds();
+                return repairService.provenenceGenderMismatch();
+            }
             case 500:
                 return repairService.reportReignCollisions();
             case 600:

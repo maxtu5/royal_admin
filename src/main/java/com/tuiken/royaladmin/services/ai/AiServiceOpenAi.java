@@ -6,7 +6,8 @@ import com.tuiken.royaladmin.datalayer.WikiCacheRecordRepository;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
-import com.tuiken.royaladmin.services.WikiService;
+import com.tuiken.royaladmin.model.workflows.AiEnrichment;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
@@ -92,6 +93,11 @@ public class AiServiceOpenAi implements AiService {
     }
 
     @Override
+    public AiEnrichment enrichAiMonarch(String wikiData) {
+        return null;
+    }
+
+    @Override
     public Monarch generateMonarch(String url) {
         Monarch monarch = monarchRepository.findByUrl(url).orElse(new Monarch(url));
         if (monarch.getId() != null && monarch.getStatus() == PersonStatus.EPHEMERAL) {
@@ -112,15 +118,10 @@ public class AiServiceOpenAi implements AiService {
         if (allowedGenders.contains(genderStr)) {
             monarch.setGender(Gender.valueOf(genderStr));
         }
-
         monarch.setBirth(parseDate(obj.optString("birth")));
         monarch.setDeath(parseDate(obj.optString("death")));
-
         monarch.setStatus(PersonStatus.NEW_AI);
-        monarch.setImageUrl(wikiService.findMainImage(url));
-//        if (monarch.getImageUrl() != null) {
-//            monarch.setImageCaption(tryForCaption(monarch.getImageUrl(), rootArray));
-//        }
+
         monarch.setDescription(obj.optString("description", null));
         return monarch;
     }

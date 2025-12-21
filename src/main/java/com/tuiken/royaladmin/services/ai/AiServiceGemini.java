@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
+import com.tuiken.royaladmin.model.workflows.AiEnrichment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,8 +24,9 @@ import java.util.List;
 public class AiServiceGemini implements AiService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String API_KEY = "AIzaSyBCYw2fSkO4KPy671CwgBDe3i95Ahvz6Lk";
-    private final String MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=" + API_KEY;
+    @Value("${gemini.api.key}")
+    private String apiKey;
+    private final String MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=";
 
     @Override
     public Monarch generateMonarch(String url) {
@@ -41,8 +44,10 @@ public class AiServiceGemini implements AiService {
         }
 
         Monarch monarch = parseMonarch(jsonText);
-        monarch.setUrl(url);
-        monarch.setStatus(PersonStatus.NEW_AI);
+        if (monarch != null) {
+            monarch.setUrl(url);
+            monarch.setStatus(PersonStatus.NEW_AI);
+        }
         return monarch;
     }
 
@@ -75,10 +80,49 @@ public class AiServiceGemini implements AiService {
 
     @Override
     public String createDescription(String name) {
-        String promptTemplate = "give me 500 chars text about %s";
+        String promptTemplate = "give me 500 chars text about %s. The format should be a JSON object like {\"text\": \"... \"}";
         String prompt = String.format(promptTemplate, name);
         String jsonText = sendPrompt(prompt);
-        return jsonText == null ? "":jsonText;
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode node = mapper.readTree(jsonText);
+            return node.get("text").asText();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
+    @Override
+    public AiEnrichment enrichAiMonarch(String wikiData) {
+        String promptTemplate = """
+        Given the HTML of the wikipedia article about the person, read it and return data json with the following fields:
+        1. motherUrl
+        2. fatherUrl
+        3. childUrls (array)
+        4. house (house or noble family)
+        Include only wikipedia article urls. If source doesn't contain it don't try to guess.
+        Provide response in JSON format only.
+        Here follows the source: 
+        %s
+    """;
+
+        String prompt = String.format(promptTemplate, wikiData);
+        String jsonText = sendPrompt(prompt);
+
+        if (jsonText == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            AiEnrichment aiEnrichment = mapper.readValue(jsonText, AiEnrichment.class);
+            return aiEnrichment;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 
     private String buildPrompt(String inputText) {
@@ -101,7 +145,7 @@ public class AiServiceGemini implements AiService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<GeminiRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(MODEL_URL, entity, GeminiResponse.class);
+        ResponseEntity<GeminiResponse> response = restTemplate.postForEntity(MODEL_URL+ apiKey, entity, GeminiResponse.class);
         String jsonText = extractJson(response.getBody());
 
         if (jsonText == null || jsonText.contains("{ null }")) {
@@ -131,7 +175,7 @@ public class AiServiceGemini implements AiService {
             return monarch;
         } catch (Exception e) {
             System.out.println(jsonText);
-            throw new RuntimeException("Failed to parse Monarch JSON", e);
+            return null;
         }
     }
 

@@ -1,7 +1,6 @@
 package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.builders.PersonBuilder;
-import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
@@ -10,13 +9,19 @@ import com.tuiken.royaladmin.model.enums.Gender;
 import com.tuiken.royaladmin.model.enums.House;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
+import com.tuiken.royaladmin.services.wiki.LinkResolver;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.DatesParser;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
@@ -32,7 +37,6 @@ public class RetrieverService {
     private final SmartIssueSearchService smartIssueSearchService;
     private final PersonBuilder personBuilder;
     private final MonarchService monarchService;
-    private final WikiDirectService wikiDirectService;
 
     public LoadFamilyConfiguration createLoadFamilyConfiguration(Monarch root) {
 
@@ -41,10 +45,10 @@ public class RetrieverService {
 
         JSONArray jsonArray = new JSONArray();
 
-        jsonArray = wikiService.read(root.getUrl());
+        jsonArray = wikiService.readJson(root.getUrl());
 
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-        Map<String, List<String>> allLinks = wikiDirectService.allLinks(root.getUrl());
+        Map<String, List<String>> allLinks = allLinks(root.getUrl());
 
         // parents
         Provenence provenence = provenanceService.findById(root.getId());
@@ -94,6 +98,32 @@ public class RetrieverService {
         configuration.setIssue(children);
         return configuration;
     }
+
+    private Map<String, List<String>> allLinks(String url) {
+        Map<String, List<String>> goodLinks = new HashMap<>();
+        Document doc;
+        try {
+            doc = Jsoup.connect(url)
+                    .userAgent("RoyalAdmin/0.1 (contact: maximtu@gmail.com)")
+                    .get();
+        } catch (IOException e) {
+            System.out.println("wiki request failed");
+            return goodLinks;
+        }
+        Elements links = doc.select("a");
+        links.forEach(link -> {
+            if (link.hasAttr("href") && link.attr("href").startsWith("/wiki") && !link.attr("href").contains(":")) {
+                List<String> r = new ArrayList<>();
+                r.add(link.text());
+                goodLinks.merge(link.attr("href"), r, (l1, l2) -> {
+                    l1.addAll(l2);
+                    return l1;
+                });
+            }
+        });
+        return goodLinks;
+    }
+
 
     private String extractParent(List<JSONObject> infoboxes, Map<String, List<String>> allLinks, String key) {
         List<JSONObject> parent = JsonUtils.drillForName(infoboxes, key);
@@ -359,7 +389,7 @@ public class RetrieverService {
 
         List<JSONObject> predecessor = JsonUtils.drillForName(list, "Predecessor");
 
-        if (predecessor.size() > 0) {
+        if (!predecessor.isEmpty()) {
             return JsonUtils.readFromLinks(predecessor, "url").get(0);
         }
         return null;

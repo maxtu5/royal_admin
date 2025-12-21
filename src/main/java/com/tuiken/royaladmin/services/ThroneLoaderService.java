@@ -3,13 +3,13 @@ package com.tuiken.royaladmin.services;
 import com.tuiken.royaladmin.builders.PersonBuilder;
 import com.tuiken.royaladmin.datalayer.ReignRepository;
 import com.tuiken.royaladmin.datalayer.ThroneRepository;
-import com.tuiken.royaladmin.exceptions.WikiApiException;
 import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
 import com.tuiken.royaladmin.model.enums.PersonStatus;
 import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
+import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +21,11 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class WikiLoaderService {
+public class ThroneLoaderService {
 
     private final ThroneService throneRoom;
     private final MonarchService monarchService;
@@ -62,16 +60,9 @@ public class WikiLoaderService {
         if (newReigns.size() == 1) {
             return addReignToThroneAndMonarchAndSave(newReigns.get(0), throne, monarch);
         }
-        if (newReigns.size() >= 2
-//                && reignsOverlap(newReigns.get(0), newReigns.get(1))
-        ) {
-            newReigns.sort((r1, r2) -> (int) Duration.between(r1.getStart(), r2.getStart()).toMinutes());
-            addReignToThroneAndMonarchAndSave(newReigns.get(0), throne, monarch);
-            return addReignToThroneAndMonarchAndSave(newReigns.get(1), throne, monarch);
-        } else {
-            System.out.println("Not one reign");
-            throw new RuntimeException();
-        }
+        newReigns.sort((r1, r2) -> (int) Duration.between(r1.getStart(), r2.getStart()).toMinutes());
+        addReignToThroneAndMonarchAndSave(newReigns.get(0), throne, monarch);
+        return addReignToThroneAndMonarchAndSave(newReigns.get(1), throne, monarch);
     }
 
     private String findPredecessor(Country country) {
@@ -82,7 +73,7 @@ public class WikiLoaderService {
             System.out.println("Latest ruler is " + lastMonarch.getName());
 
             JSONArray jsonArray = null;
-            jsonArray = wikiService.read(lastMonarch.getUrl());
+            jsonArray = wikiService.readJson(lastMonarch.getUrl());
             return retrieverService.retrievePredecessor(jsonArray, country);
         }
         return null;
@@ -118,48 +109,15 @@ public class WikiLoaderService {
         return monarchService.toApiDto(monarch);
     }
 
-    public List<MonarchApiDto> loadRulersFamilyMembers(Country country, int quantity, int depth) {
-        List<UUID> idsToLoad = findUnresolvedIds(country, quantity, depth);
-        return idsToLoad.stream().flatMap(id -> loadFamilyOne(id).stream()).toList();
-    }
-
-    private List<UUID> findUnresolvedIds(Country country, int quantity, int maxDepth) {
-        List<UUID> retval = new ArrayList<>();
-
-        Throne throne = throneRoom.loadThroneByCountry(country);
-        if (throne == null || throne.getReigns().isEmpty()) return retval;
-
-        Set<UUID> idsOnly = throne.getReigns().stream()
-                .map(Reign::getId)
-                .map(monarchService::findByReignId)
-                .map(Monarch::getId).collect(Collectors.toSet());
-
-        int depth = 0;
-        while (retval.size() < quantity && depth < maxDepth) {
-            List<MonarchIdStatus> monarchsLevel = monarchService.finByManyId(idsOnly);
-            List<MonarchIdStatus> monarchsLevelUnresolved = monarchsLevel.stream().filter(ids -> ids.getStatus() != PersonStatus.RESOLVED).toList();
-            retval.addAll(monarchsLevelUnresolved.stream().map(MonarchIdStatus::getId).limit(quantity - retval.size()).toList());
-            idsOnly = provenanceService.findAllRelatives(monarchsLevel.stream().map(MonarchIdStatus::getId).toList());
-            depth++;
-        }
-
-        return retval;
-    }
-
     @Transactional
     public List<MonarchApiDto> loadFamilyOne(UUID id) {
         Monarch monarch = monarchService.finById(id);
         if (monarch == null) return new ArrayList<>();
         List<MonarchApiDto> retval = switch (monarch.getStatus()) {
             case NEW_URL -> loadFamilyApi(monarch);
-            case NEW_WEB -> loadFamilyWeb(monarch);
             default -> new ArrayList<>();
         };
         return retval;
-    }
-
-    private List<MonarchApiDto> loadFamilyWeb(Monarch monarch) {
-        return new ArrayList<>();
     }
 
     private List<MonarchApiDto> loadFamilyApi(Monarch monarch) {
@@ -185,7 +143,7 @@ public class WikiLoaderService {
         retval.setFamily(provenanceService.toFamilyDto(monarch, provenence));
         List<MonarchApiDto> monarchApiDtos = new ArrayList<>();
         monarchApiDtos.add(retval);
-        monarchApiDtos.addAll(newMonarchs.stream().filter(m->!m.getStatus().equals(PersonStatus.RESOLVED)).map(monarchService::toApiDto).toList());
+        monarchApiDtos.addAll(newMonarchs.stream().filter(m -> !m.getStatus().equals(PersonStatus.RESOLVED)).map(monarchService::toApiDto).toList());
         return monarchApiDtos;
     }
 }
