@@ -40,35 +40,52 @@ public class ThroneService {
 
     @Transactional
     public List<ThroneDto> findThrones(String country) {
-        List<ThroneDto> retval = new ArrayList<>();
-        throneRepository.findAll()
-                .forEach(t -> {
-                    if (Strings.isBlank(country) || t.getCountry().equals(Country.valueOf(country))) {
-                        retval.add(ThroneDto.builder()
-                                .id(t.getId().toString())
-                                .name(t.getName())
-                                .country(t.getCountry().toString())
-                                .reigns(t.getReigns().stream()
-                                        .map(Reign::getId)
-                                        .map(id -> {
-                                            Reign reign = reignRepository.findById(id).orElse(null);
-                                            Monarch monarch = monarchService.findByReignId(id);
-                                            MonarchApiDto monarchApiDto = monarchService.toApiDto(monarch);
-                                            return reign == null ? null : ReignDto.builder()
-                                                    .id(id.toString())
-                                                    .title(reign.getTitle())
-                                                    .start(Converters.toLocalDate(reign.getStart()))
-                                                    .end(Converters.toLocalDate(reign.getEnd()))
-                                                    .monarch(monarchApiDto)
-                                                    .build();
-                                        })
-                                        .collect(Collectors.toList()))
-                                .build());
-                    }
-                });
-        return retval;
-    }
+        List<ThroneDto> result = new ArrayList<>();
 
+        List<Throne> thrones = new ArrayList<>();
+        throneRepository.findAll().forEach(thrones::add);
+
+        for (Throne t : thrones) {
+            if (Strings.isBlank(country) || t.getCountry().equals(Country.valueOf(country))) {
+
+                List<ReignDto> reignDtos = new ArrayList<>();
+
+                for (Reign reignRef : t.getReigns()) {
+                    UUID id = reignRef.getId();
+
+                    Reign reign = reignRepository.findById(id).orElse(null);
+                    if (reign == null) {
+                        reignDtos.add(null);
+                        continue;
+                    }
+
+                    Monarch monarch = monarchService.findByReignId(id);
+                    MonarchApiDto monarchApiDto = monarchService.toApiDto(monarch);
+
+                    ReignDto reignDto = ReignDto.builder()
+                            .id(id.toString())
+                            .title(reign.getTitle())
+                            .start(Converters.toLocalDate(reign.getStart()))
+                            .end(Converters.toLocalDate(reign.getEnd()))
+                            .monarch(monarchApiDto)
+                            .build();
+
+                    reignDtos.add(reignDto);
+                }
+
+                ThroneDto throneDto = ThroneDto.builder()
+                        .id(t.getId().toString())
+                        .name(t.getName())
+                        .country(t.getCountry().toString())
+                        .reigns(reignDtos)
+                        .build();
+
+                result.add(throneDto);
+            }
+        }
+
+        return result;
+    }
     public Throne loadThroneByCountry(Country country) {
         List<Throne> list = throneRepository.findByCountry(country);
         return list != null && list.size() == 1 ? list.get(0) : null;

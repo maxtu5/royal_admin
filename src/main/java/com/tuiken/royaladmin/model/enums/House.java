@@ -1,5 +1,6 @@
 package com.tuiken.royaladmin.model.enums;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileWriter;
@@ -325,7 +326,7 @@ public enum House {
     ARDENNES_METZ("Ardennes-Metz"),
     INGELGER("Ingelger"),
     BASARAB("Basarab"),
-    ELDER_WELF("Elder  Welf"),
+    ELDER_WELF("Elder Welf"),
     CONRADINE("Conradine"),
     NAMUR("Namur"),
     MONTENUOVO("Montenuovo"),
@@ -397,7 +398,7 @@ public enum House {
     SOLMS_LAUBACH("Solms-Laubach"),
     HANAU_SCHAUMBURG("Hanau-Schaumburg"),
     PALAIOLOGOS("Palaiologos"),
-    LA_TOUR_DAUVERGNE("La Tour d\"Auvergne"),
+    LA_TOUR_DAUVERGNE("La Tour d'Auvergne"),
     FITZJAMES("FitzJames"),
     ROUPENIANS("Roupenians"),
     BOLEYN("Boleyn"),
@@ -578,7 +579,7 @@ public enum House {
     DEVEREUX("Devereux"),
     DIOGENES("Diogenes"),
     DOUKID("Doukid"),
-    DRACULESTI("Drăculeşti"),
+    DRACULESTI("Drăculești"),
     DUDLEY("Dudley"),
     DULKADIR("Dulkadir"),
     DANESTI("Dănești"),
@@ -782,40 +783,180 @@ public enum House {
     ZENEVISI("Zenevisi"),
     ZWEIBRUCKEN("Zweibrücken"),
     INIGUEZ("Íñiguez"),
-    ZOLKIEWSKI("Żółkiewski");
+    ZOLKIEWSKI("Żółkiewski"),
+    ALAWIYYA("Alawiyya"),
+    WALBECK("Walbeck"),
+    UDONIDS("Udonids"),
+    EKKEHARDINER("Ekkehardiner"),
+    UDONEN("Udonen"),
+    MINDAUGAS("Mindaugas"),
+    ORMSBY_GORE("Ormsby-Gore"),
+    DEGENFELD("Degenfeld"),
+    STROZZI("Strozzi"),
+    BUONDELMONTI("Buondelmonti"),
+    MUNK("Munk"),
+    LINDENOV("Lindenov"),
+    LA_TOUR("La Tour"),
+    EKKEHARDING("Ekkeharding"),
+    ODROWAZ("Odrowąż"),
+    BASSEWITZ("Bassewitz"),
+    COSSE("Cossé"),
+    GRIMANI("Grimani"),
+    LOREDAN("Loredan"),
+    QUERINI("Querini"),
+    FILANGIERI("Filangieri"),
+    GIROIE("Giroie"),
+    LUCCHESI_PALLI("Lucchesi-Palli"),
+    PIGNATELLI("Pignatelli"),
+    SALERNO("Salerno"),
+    BENEVENTAN("Beneventan"),
+    BRANCIFORTE("Branciforte"),
+    LOMBARDY("Lombardy"),
+    GUIDESCHI("Guideschi"),
+    WIDONIDS("Widonids"),
+    MONTEFELTRO("Montefeltro"),
+    CANE("Cane"),
+    DA_VARANO("Da Varano"),
+    MONCADA_DI_PATERNO("Moncada di Paternò"),
+    FOSCARI("Foscari"),
+    DEIRA("Deira"),
+    KENT("Kent"),
+    TUCHET("Tuchet"),
+    RHEGED("Rheged"),
+    MEROVINGIANS("Merovingians"),
+    AMALI("Amali"),
+    AMAL("Amal"),
+    AUERSPERG("Auersperg"),
+    RUNKEL("Runkel"),
+    FITZWALTER("Fitzwalter"),
+    VERE("Vere"),
+    UGHTRED("Ughtred"),
+    BONVILLE("Bonville"),
+    DARCY("Darcy"),
+    ALMADA("Almada"),
+    BERKELEY("Berkeley"),
+    BRAYE("Braye"),
+    SILVA("Silva"),
+    TOLEDO("Toledo"),
+    OSUNA("Osuna"),
+    CADAVAL("Cadaval"),
+    BÁTHORY("Báthory"),
+    BETHLEN("Bethlen"),
+    SIWARD("Siward"),
+    KEITH("Keith"),
+    WEST("West"),
+    LESLIE("Leslie"),
+    BROOKE("Brooke"),
+    SUTTON("Sutton"),
+    GRENVILLE("Grenville"),
+    MORVILLE("Morville"),
+    PECCHE("Pecche"),
+    MEROVINGIAN("Merovingian"),
+    WUFFINGAS("Wuffingas"),
+    DE_VAUX("de Vaux"),
+    VERNON("Vernon"),
+    DE_SALISBURY("de Salisbury"),
+    ARUNDEL("Arundel"),
+    LIMESAY("Limesay"),
+    LUCY("Lucy"),
+    BOLEBEC("Bolebec"),
+    QUINCY("Quincy"),
+    MUHAMMAD_ALI("Muhammad Ali"),
+    IMPERIAL_OSMAN("Imperial Osman"),
+    NEUCHATEL("Neuchâtel"),
+    TORNABUONI("Tornabuoni"),
+    LOOZ("Looz"),
+    HLAÐIR("Hlaðir"),
+    KNOLLYS("Knollys"),
+    ANSCARIDS("Anscarids"),
+    NEUENAHR_ALPEN("Neuenahr-Alpen"),
+    DE_AUDLEY("de Audley"),
+    ROSTISLAVICHI("Rostislavichi"),
+    LERCHENFELD("Lerchenfeld"),
+    BRANICKI("Branicki"),
+    DALASSENOS("Dalassenos"),
+    GUELF("Guelf"),
+    MARCHE("Marche"),
+    STRATSIMIR("Stratsimir"),
+    SELJUK("Seljuk"),
+    HENNEBERG("Henneberg"),
+    GOLITSYN("Golitsyn"),
+    BÉTHUNE("Béthune"),
+    KONIECPOLSKI("Koniecpolski"),
+    SUPPONID("Supponid"),
+    DANDOLO("Dandolo"),
+    ARDENNES("Ardennes"),
+    SUPPONIDS("Supponids"),
+    PORSE("Porse"),
+    BLOUNT("Blount"),
+    CHACHBA("Chachba"),
+    ȘTIRBEI("Știrbei"),
+    GHICA("Ghica"),
+    KAYI_TRIBE("Kayı tribe"),
+    CASTILIAN_BURGUNDY("Castilian Burgundy"),
+    ARMSTRONG_JONES("Armstrong-Jones"),
+    AMIRSOLEIMANI("Amirsoleimani"),
+    AL_MAKTOUM("Al Maktoum"),
+    BANU_QATADAH("Banu Qatadah"),
+    CALLIMACHI("Callimachi"),
+    TALHOSTEN("Talhosten"),
+    PAHLAVI("Pahlavi"),
+    SOUTZOS("Soutzos"),
+    BRATIANU("Brătianu"),
+    HASHEM("Hashem"),
+    IRAQ("Iraq"),
+    SUHRAWARDIYYA("Suhrawardiyya"),
+    WELLESLEY("Wellesley"),
+    SACKVILLE("Sackville"),
+    PANTON("Panton"),
+    COLYEAR("Colyear"),
+    OSBORNE("Osborne"),
+    URSEL("Ursel"),
+    MOJMIR("Mojmír"),
+    TOWNSHEND("Townshend"),
+    MAXWELL("Maxwell"),
+    MONTGOMERY("Montgomery"),
+    TENNANT("Tennant"),
+    SAMBORIDES("Samborides"),
+    SAMBORIDE("Samboride"),
+    WALDBURG("Waldburg"),
+    AGILOLFINGS("Agilolfings"),
+    PIPPINIDS("Pippinids"),
+    LETHINGS("Lethings"),
+    FATIMID("Fatimid"),
+    RUSSELL("Russell"),
+    BISMARCK("Bismarck"),
+    PUTTKAMER("Puttkamer"),
+    NOORANI("Noorani"),
+    HOCHBERG("Hochberg"),
+    ASAF_JAH("Asaf Jah"),
+    SCHLESWIG_HOLSTEIN_GOTTORP("Schleswig-Holstein-Gottorp"),
+    DENDERMONDE("Dendermonde"),
+    TENGBOM("Tengbom"),
+    HOCHBERG_PLESS("Hochberg-Pless"),
+    KARIM_AL_HUSSEINI("Karim al-Husseini"),
+    ALY_KHAN("Aly Khan"),
+    VESCI("Vesci"),
+    ZAKARID("Zakarid"),
+    BURGO("Burgo"),
+    MEDINACELI("Medinaceli"),
+    MELUN("Melun"),
+    BORGHESE("Borghese"),
+    BRASCHI_ONESTI("Braschi-Onesti"),
+    CALDORA("Caldora"),
+    ODESCALCHI("Odescalchi"),
+    COLONNA("Colonna"),
+    HESSE_PHILIPPSTAHL("Hesse-Philippsthal"),
+    CALVELAGE_RAVENSBERG("Calvelage-Ravensberg"),
+    ROS("Ros"),
+    DURAZZO("Durazzo"),
+    BEAUVAU("Beauvau");
 
-    private static final String UNSAVED_HOUSES_FILE = "C:\\Users\\MT\\IdeaProjects\\royal_admin\\data\\houses.txt";
+    @Getter
     private final String label;
 
     House(String label) {
         this.label = label;
-    }
-
-    public static House HouseFromBeginningOfString(String src) {
-        src = src.trim();
-
-        // Step 2: Remove trailing "of" if present
-        if (src.matches(".*\\bof$")) {
-            src = src.replaceAll("\\bof$", "").trim();
-        }
-
-        for (House h : House.values()) {
-            if (src.toUpperCase().startsWith(h.label.toUpperCase())) {
-                return h;
-            }
-        }
-        if (!src.toUpperCase().contains("HOUSE") && !src.toUpperCase().contains("AGNATIC")) {
-            log.info("!!!!! ==== House detection ===== !!!!!!\nUnrecognized: " + src);
-            FileWriter writer = null; // true for append mode
-            try {
-                writer = new FileWriter(UNSAVED_HOUSES_FILE, true);
-                writer.write(String.format("%s(\"%s\"),\n", src.toUpperCase(), src));
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return null;
     }
 
 }

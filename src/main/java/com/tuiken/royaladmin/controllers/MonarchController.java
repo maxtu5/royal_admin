@@ -81,7 +81,7 @@ public class MonarchController {
 
     @PostMapping(path = "/resolve/{id}")
     public List<MonarchApiDto> resolveMonarch(@PathVariable String id) {
-        return throneLoaderService.loadFamilyOne(UUID.fromString(id));
+        return enrichmentService.enrichInfobox(UUID.fromString(id));
     }
 
     @PostMapping(path = "/resolveai/{id}")

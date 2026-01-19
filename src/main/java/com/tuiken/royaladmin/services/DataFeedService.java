@@ -26,6 +26,7 @@ public class DataFeedService {
     private final PersonBuilder personBuilder;
     private final ThroneLoaderService throneLoaderService;
     private final WikiService wikiService;
+    EnrichmentService enrichmentService;
 
     public Monarch resolveUrlSimple(String url) {
         String resolvedUrl = linkResolver.resolve(url);
@@ -105,7 +106,7 @@ public class DataFeedService {
                 relative.setProcess("AI");
                 monarchService.save(relative);
             }
-            List<MonarchApiDto> loaded = throneLoaderService.loadFamilyOne(relative.getId());
+            List<MonarchApiDto> loaded = enrichmentService.enrichInfobox(relative.getId());
             allLoaded.addAll(loaded);
         });
         allLoaded.add(monarchService.toApiDto(monarch));

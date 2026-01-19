@@ -5,18 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.json.JSONObject;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.apache.kafka.common.TopicPartition;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.concurrent.ConcurrentHashMap;
-
-@Service
+//@Service
 @RequiredArgsConstructor
 public class RoyalKafkaConsumer implements ConsumerSeekAware {
 

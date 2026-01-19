@@ -46,7 +46,7 @@ public class MonarchService {
     }
 
     public Monarch save(Monarch monarch) {
-        if (monarch.getId() == null) System.out.println("Saved " + monarch.getName());
+        if (monarch.getId() == null) System.out.println("= Saved " + monarch.getName());
         return monarchRepository.save(monarch);
     }
 

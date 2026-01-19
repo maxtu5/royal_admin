@@ -7,8 +7,6 @@ import com.tuiken.royaladmin.model.api.output.MonarchApiDto;
 import com.tuiken.royaladmin.model.api.output.ReignDto;
 import com.tuiken.royaladmin.model.entities.*;
 import com.tuiken.royaladmin.model.enums.Country;
-import com.tuiken.royaladmin.model.enums.PersonStatus;
-import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
 import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.Converters;
 import jakarta.transaction.Transactional;
@@ -21,7 +19,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -109,41 +106,4 @@ public class ThroneLoaderService {
         return monarchService.toApiDto(monarch);
     }
 
-    @Transactional
-    public List<MonarchApiDto> loadFamilyOne(UUID id) {
-        Monarch monarch = monarchService.finById(id);
-        if (monarch == null) return new ArrayList<>();
-        List<MonarchApiDto> retval = switch (monarch.getStatus()) {
-            case NEW_URL -> loadFamilyApi(monarch);
-            default -> new ArrayList<>();
-        };
-        return retval;
-    }
-
-    private List<MonarchApiDto> loadFamilyApi(Monarch monarch) {
-        System.out.printf("\n+++ Loading family for %s +++%n", monarch.getName());
-
-        Monarch unmanaged = new Monarch(monarch.getUrl());
-        unmanaged.setId(monarch.getId());
-        unmanaged.setName(monarch.getName());
-        unmanaged.setGender(monarch.getGender());
-        unmanaged.setBirth(monarch.getBirth());
-        unmanaged.setDeath(monarch.getDeath());
-
-        LoadFamilyConfiguration configuration = retrieverService.createLoadFamilyConfiguration(unmanaged);
-        configuration.print();
-        List<Monarch> newMonarchs = retrieverService.saveLoaded(configuration);
-
-        monarch.setStatus(PersonStatus.RESOLVED);
-        monarch.setProcess("AI");
-        monarchService.save(monarch);
-
-        MonarchApiDto retval = monarchService.toApiDto(monarch);
-        Provenence provenence = provenanceService.findById(monarch.getId());
-        retval.setFamily(provenanceService.toFamilyDto(monarch, provenence));
-        List<MonarchApiDto> monarchApiDtos = new ArrayList<>();
-        monarchApiDtos.add(retval);
-        monarchApiDtos.addAll(newMonarchs.stream().filter(m -> !m.getStatus().equals(PersonStatus.RESOLVED)).map(monarchService::toApiDto).toList());
-        return monarchApiDtos;
-    }
 }

@@ -1,5 +1,5 @@
 package com.tuiken.royaladmin.model.enums;
 
 public enum PersonStatus {
-    NEW_NO_URL, NEW_URL, RESOLVED, NEW_AI, EPHEMERAL
+    NEW_NO_URL, NEW_URL, RESOLVED, NEW_AI, EPHEMERAL, RESOLVED_AI
 }

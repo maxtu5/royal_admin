@@ -54,6 +54,7 @@ public class ExportService {
 
         List<ReignCsvDto> reignDtos = new ArrayList<>();
         for (Throne throne : thrones) {
+            System.out.println(throne.getCountry());
             reignDtos.addAll(buildReignDtos(throne, monarchs));
         }
         saveToCSV(reignDtos, TARGET_PATH + REIGNS_FILE);
@@ -92,7 +93,6 @@ public class ExportService {
 
     private List<ReignCsvDto> buildReignDtos(Throne throne, List<Monarch> monarchs) {
         List<ReignCsvDto> reignDtos = new ArrayList<>();
-        Map<String, Integer> doubleRulers = new HashMap<>();
         for (int i = 0; i < throne.getReigns().size(); i++) {
             int j = i;
             Monarch monarch = monarchs.stream()

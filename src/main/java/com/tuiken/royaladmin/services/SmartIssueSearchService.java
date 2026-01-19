@@ -24,7 +24,7 @@ public class SmartIssueSearchService {
     private static final String SIMPLE_URL_PREFIX = "https://simple.wikipedia.org/wiki/";
     private static final String NORMAL_URL_PREFIX = "https://en.wikipedia.org/wiki/";
 
-    List<Monarch> findInAllLinksParentCheck(List<JSONObject> issue, Monarch root, Map<String, List<String>> allLinks) {
+    List<Monarch> findInAllLinksParentCheck(List<JSONObject> issue, Map<String, List<String>> allLinks) {
         List<String> names = JsonUtils.readFromValues(issue).stream()
                 .map(s -> s.replaceAll("Illegitimate:", "").trim())
                 .filter(Strings::isNotBlank)

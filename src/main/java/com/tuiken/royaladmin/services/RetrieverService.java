@@ -1,6 +1,7 @@
 package com.tuiken.royaladmin.services;
 
 import com.tuiken.royaladmin.builders.PersonBuilder;
+import com.tuiken.royaladmin.datalayer.ProvenenceRepository;
 import com.tuiken.royaladmin.model.entities.Monarch;
 import com.tuiken.royaladmin.model.entities.Provenence;
 import com.tuiken.royaladmin.model.entities.Reign;
@@ -12,6 +13,7 @@ import com.tuiken.royaladmin.model.workflows.LoadFamilyConfiguration;
 import com.tuiken.royaladmin.services.wiki.LinkResolver;
 import com.tuiken.royaladmin.services.wiki.WikiService;
 import com.tuiken.royaladmin.utils.DatesParser;
+import com.tuiken.royaladmin.utils.HouseParser;
 import com.tuiken.royaladmin.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import org.json.JSONArray;
@@ -37,39 +39,43 @@ public class RetrieverService {
     private final SmartIssueSearchService smartIssueSearchService;
     private final PersonBuilder personBuilder;
     private final MonarchService monarchService;
+    private final ProvenenceRepository provenenceRepository;
 
-    public LoadFamilyConfiguration createLoadFamilyConfiguration(Monarch root) {
+    public LoadFamilyConfiguration createLoadFamilyConfiguration(UUID rootId, String rootUrl, Gender rootGender) {
 
         LoadFamilyConfiguration configuration = LoadFamilyConfiguration.builder()
-                .rootId(root.getId()).rootUrl(root.getUrl()).rootGender(root.getGender()).build();
+                .rootId(rootId).rootUrl(rootUrl).rootGender(rootGender).build();
 
         JSONArray jsonArray = new JSONArray();
 
-        jsonArray = wikiService.readJson(root.getUrl());
+        jsonArray = wikiService.readJson(rootUrl);
 
         List<JSONObject> infoboxes = JsonUtils.readInfoboxes(jsonArray);
-        Map<String, List<String>> allLinks = allLinks(root.getUrl());
+        Map<String, List<String>> allLinks = allLinks(rootUrl);
 
         // parents
-        Provenence provenence = provenanceService.findById(root.getId());
+        Provenence provenence = provenanceService.findById(rootId);
         if (provenence != null) {
             if (provenence.getFather() != null) configuration.setFatherId(provenence.getFather());
             if (provenence.getMother() != null) configuration.setMotherId(provenence.getMother());
         }
 
-        String fatherUrl = extractParent(infoboxes, allLinks, "Father");
-        if (fatherUrl != null) {
-            Monarch monarch = personBuilder.findOrCreate(fatherUrl, Gender.MALE);
-            configuration.setFather(monarch);
+        if (provenence!= null && provenence.getFather() != null) {
+            String fatherUrl = extractParent(infoboxes, allLinks, "Father");
+            if (fatherUrl != null) {
+                Monarch monarch = personBuilder.findOrCreate(fatherUrl, Gender.MALE);
+                configuration.setFather(monarch);
+            }
+        }
+        if (provenence!= null && provenence.getMother() != null) {
+            String motherUrl = extractParent(infoboxes, allLinks, "Mother");
+            if (motherUrl != null) {
+                Monarch monarch = personBuilder.findOrCreate(motherUrl, Gender.FEMALE);
+                configuration.setMother(monarch);
+            }
         }
 
-        String motherUrl = extractParent(infoboxes, allLinks, "Mother");
-        if (motherUrl != null) {
-            Monarch monarch = personBuilder.findOrCreate(motherUrl, Gender.FEMALE);
-            configuration.setMother(monarch);
-        }
-
-        if (motherUrl == null && fatherUrl == null) {
+        if (configuration.getFather() == null && configuration.getMother() == null) {
             List<String> parents = extractParents(infoboxes, allLinks);
             System.out.printf("Found %s parents%n", parents.size());
             if (parents.size() == 2) {
@@ -88,13 +94,13 @@ public class RetrieverService {
         }
 
         // children
-        List<Provenence> issueP = root.getGender() == Gender.MALE ?
-                provenanceService.findByFather(root.getId()) :
-                provenanceService.findByMother(root.getId());
+        List<Provenence> issueP = rootGender == Gender.MALE ?
+                provenanceService.findByFather(rootId) :
+                provenanceService.findByMother(rootId);
         configuration.setIssueIds(issueP.stream()
                 .map(Provenence::getId)
                 .collect(Collectors.toList()));
-        List<Monarch> children = extractIssue(infoboxes, root, allLinks);
+        List<Monarch> children = extractIssue(infoboxes, allLinks);
         configuration.setIssue(children);
         return configuration;
     }
@@ -158,7 +164,7 @@ public class RetrieverService {
                 .toList();
     }
 
-    private List<Monarch> extractIssue(List<JSONObject> infoboxes, Monarch root, Map<String, List<String>> allLinks) {
+    private List<Monarch> extractIssue(List<JSONObject> infoboxes, Map<String, List<String>> allLinks) {
         List<JSONObject> issue = JsonUtils.drillForName(infoboxes, "Issue detail", "Issue", "Issue more...", "Issue More", "Illegitimate children Detail", "Issue among others...", "Illegitimate children more...", "Children");
 
         List<String> issueUrls = JsonUtils.readFromLinks(issue, "url").stream()
@@ -166,7 +172,7 @@ public class RetrieverService {
                 .filter(Objects::nonNull).toList();
         if (!issueUrls.isEmpty()) System.out.println("Wow found simply: " + issueUrls.size());
 
-        List<Monarch> retval = issueUrls.isEmpty() ? smartIssueSearchService.findInAllLinksParentCheck(issue, root, allLinks) :
+        List<Monarch> retval = issueUrls.isEmpty() ? smartIssueSearchService.findInAllLinksParentCheck(issue, allLinks) :
                 issueUrls.stream()
                         .map(url -> personBuilder.findOrCreate(url, null))
                         .filter(Objects::nonNull)
@@ -240,9 +246,11 @@ public class RetrieverService {
                 monarchService.save(savedChild);
             }
             if (!configuration.getIssueIds().contains(savedChild.getId())) {
-                Provenence provenenceChild = configuration.getRootGender() == Gender.MALE ?
-                        Provenence.builder().id(savedChild.getId()).father(configuration.getRootId()).build() :
-                        Provenence.builder().id(savedChild.getId()).mother(configuration.getRootId()).build();
+                Provenence provenenceChild = provenenceRepository.findById(savedChild.getId()).orElse(Provenence.builder().id(savedChild.getId()).build());
+                if (configuration.getRootGender() == Gender.MALE)
+                    provenenceChild.setFather(configuration.getRootId());
+                else
+                    provenenceChild.setMother(configuration.getRootId());
                 provenanceService.save(provenenceChild);
                 if (!savedChild.getStatus().equals(PersonStatus.RESOLVED)) newMonarchs.add(savedChild);
                 return 1;
@@ -277,37 +285,18 @@ public class RetrieverService {
     }
 
     public static Set<House> retrieveHouses(JSONArray jsonArray) {
-        Set<String> captions = Set.of("House of", "Noble family", "Family", "agnatic", "Dynasty", "family", "Noble");
         List<JSONObject> list = JsonUtils.arrayTolist(jsonArray);
         List<JSONObject> houseObjects = JsonUtils.drillForName(list, "House", "Dynasty", "Noble family", "Family");
-        Set<String> houseStrings = JsonUtils.readFromLinks(houseObjects, "text").stream()
-                .map(s -> {
-                    for (String sample: captions) {
-                        if (s.contains(sample)) return s.replaceAll(sample, "");
-                    }
-                    return s;
-                })
-                .map(s->s.trim().replaceAll("\\s{2,}", " "))
-                .filter(s->!s.isEmpty())
-                .collect(Collectors.toSet());
+        Set<String> houseStrings = new HashSet<>(JsonUtils.readFromLinks(houseObjects, "text"));
         houseStrings.addAll(houseObjects.stream()
                 .map(JsonUtils::readValue)
-                .filter(Objects::nonNull)
-                .map(s -> {
-                    for (String sample: captions) {
-                        if (s.contains(sample)) return s.replaceAll(sample, "");
-                    }
-                    return s;
-                })
-                .map(s->s.trim().replaceAll("\\s{2,}", " "))
-                .filter(s->!s.isEmpty())
                 .collect(Collectors.toSet()));
-        Set<House> houses = new HashSet<>();
-        for (String s : houseStrings) {
-            House house = House.HouseFromBeginningOfString(s);
-            if (house != null) houses.add(house);
-        }
-        return houses;
+
+        return houseStrings.stream()
+                .filter(Objects::nonNull)
+                .map(HouseParser::parseHouse)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     public static List<Reign> retrieveReigns(JSONArray jsonArray, Country country) {

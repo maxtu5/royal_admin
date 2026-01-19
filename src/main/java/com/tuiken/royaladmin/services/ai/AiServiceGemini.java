@@ -102,6 +102,7 @@ public class AiServiceGemini implements AiService {
         2. fatherUrl
         3. childUrls (array)
         4. house (house or noble family)
+        5. title - "baron", "count", "markgravene", etc
         Include only wikipedia article urls. If source doesn't contain it don't try to guess.
         Provide response in JSON format only.
         Here follows the source: 
